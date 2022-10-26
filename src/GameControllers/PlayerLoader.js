@@ -7,22 +7,30 @@ class PlayerLoader extends GameObject{
         this.createCollisionMesh();
     }
     createCollisionMesh(){
-        this.main= new Mesh('parent',this.scene);
+        this.mesh = MeshBuilder.CreateBox("player_container", {width: 1.5, depth: 1.5, height: 3});
+        this.mesh.isVisible = false;
+        this.mesh.isPickable = true;
+        this.mesh.checkCollisions = true;
+
+        //move origin of box collider to the bottom of the mesh (to match player mesh)
+        this.mesh.bakeTransformIntoVertices(Matrix.Translation(0, 1.5, 0))
+        //for collisions
+        this.mesh.ellipsoid = new Vector3(1, 1.5, 1);
+        this.mesh.ellipsoidOffset = new Vector3(0, 1.5, 0);
+        // this.mesh.rotationQuaternion = new Quaternion(0, 0, 0, 0); // rotate the player mesh 180 since we want to see the back of the player
 
         //Camera target
-        this.target= new TransformNode("target");
-        this.target.parent= this.main;
+        this.target= new TransformNode("camera_target");
+        this.target.parent= this.mesh;
         this.target.position = new Vector3(0,3,-10)
 
-        this.character= new Mesh('character', this.scene)
-        this.character.parent= this.main;
+        //Character Parent
+        this.character = new TransformNode("character_parent");
+        this.character.rotationQuaternion = new Quaternion(0,1,0,0);
+        this.character.parent = this.mesh
 
-        this.main.position = new Vector3(0,0,0)
+        this.mesh.position = new Vector3(0,0,0)
 
-        //Create elipsoide
-        this.main.ellipsoid = new Vector3(0.5, 0.9, 0.5);
-        this.main.ellipsoidOffset = new Vector3(0, this.main.ellipsoid.y, 0);
-        this.main.checkCollisions = true;
     }
 
     async loadPlayer(){
@@ -31,7 +39,8 @@ class PlayerLoader extends GameObject{
 
             //body is our actual player mesh
             this.body = root;
-            this.body.parent = this.main;
+            this.body.parent = this.character;
+            this.body.rotationQuaternion.y = 0;
             this.body.isPickable = false; //so our raycasts dont hit ourself
             this.body.getChildMeshes().forEach(m => {
                 m.isPickable = false;
