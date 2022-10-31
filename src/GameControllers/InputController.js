@@ -6,7 +6,6 @@ import {
 } from "@babylonjs/core";
 
 class InputController extends GameObject{
-    static MOUSE_SENSITIVITY =  0.0005;
 
     constructor() {
         super();

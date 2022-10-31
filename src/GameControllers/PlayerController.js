@@ -26,23 +26,25 @@ class PlayerController extends GameObject{
         this.horizontal = this.input.horizontalAxis;
         this.vertical = this.input.verticalAxis;
         //right
-        if(this.horizontal < 0){
+        if(this.horizontal > 0){
             this.player.mesh.rotation.y += .1;
             this.player.mesh.frontVector = new Vector3(Math.sin(this.player.mesh.rotation.y),0,Math.cos(this.player.mesh.rotation.y));
             this.camera.rotationOffset = 180;
         }
         // //left
-        if(this.horizontal > 0){
+        if(this.horizontal < 0){
             this.player.mesh.rotation.y -= .1;
             this.player.mesh.frontVector = new Vector3(Math.sin(this.player.mesh.rotation.y),0,Math.cos(this.player.mesh.rotation.y));
             this.camera.rotationOffset = 180;
         }
         //up
-        if(this.vertical < 0){
+        if(this.vertical > 0){
+            this.player.mesh.frontVector = new Vector3(Math.sin(this.player.mesh.rotation.y),0,Math.cos(this.player.mesh.rotation.y));
             this.player.mesh.moveWithCollisions(this.player.mesh.frontVector.multiplyByFloats(PlayerController.PLAYER_SPEED,PlayerController.PLAYER_SPEED,PlayerController.PLAYER_SPEED));
         }
         // //down
-        if(this.vertical > 0){
+        if(this.vertical < 0){
+            this.player.mesh.frontVector = new Vector3(Math.sin(this.player.mesh.rotation.y),0,Math.cos(this.player.mesh.rotation.y));
             this.player.mesh.moveWithCollisions(this.player.mesh.frontVector.multiplyByFloats(-PlayerController.PLAYER_SPEED,-PlayerController.PLAYER_SPEED,-PlayerController.PLAYER_SPEED));
         }
 

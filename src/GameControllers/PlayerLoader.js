@@ -8,7 +8,7 @@ class PlayerLoader extends GameObject{
     }
     createCollisionMesh(){
         this.mesh = MeshBuilder.CreateBox("player_container", {width: 1.5, depth: 1.5, height: 3});
-        this.mesh.isVisible = false;
+        this.mesh.isVisible = true;
         this.mesh.isPickable = true;
         this.mesh.checkCollisions = true;
 
@@ -26,7 +26,7 @@ class PlayerLoader extends GameObject{
 
         //Character Parent
         this.character = new TransformNode("character_parent");
-        this.character.rotationQuaternion = new Quaternion(0,1,0,0);
+        // this.character.rotationQuaternion = new Quaternion(0,1,0,0);
         this.character.parent = this.mesh
 
         this.mesh.position = new Vector3(0,0,0)

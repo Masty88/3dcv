@@ -29,7 +29,7 @@ class GameController{
         GameObject.Engine.displayLoadingUI()
         const camera = new FreeCamera("camera1", new Vector3(0, 5, -10), scene);
         camera.setTarget(Vector3.Zero());
-        camera.attachControl(true)
+        // camera.attachControl(true)
 
         new HemisphericLight("light", Vector3.Up(), scene);
 
