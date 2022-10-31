@@ -1,10 +1,17 @@
 import GameObject from "@/GameControllers/GameObject";
-import {Quaternion, SceneLoader, TransformNode, UniversalCamera, Vector3} from "@babylonjs/core";
+import {
+    ArcRotateCamera, FollowCamera,
+    Quaternion,
+    SceneLoader,
+    Tools,
+    TransformNode,
+    UniversalCamera,
+    Vector3
+} from "@babylonjs/core";
 
 class PlayerController extends GameObject{
     static PLAYER_SPEED= 0.2;
-    static ORIGINAL_TILT = new Vector3(0.5934119456780721, 0, 0);
-
+    static CAMERA_SPEED = 10 ;
 
     constructor(input,player) {
         super();
@@ -15,50 +22,35 @@ class PlayerController extends GameObject{
 
 
     updateFromControl(){
-        this.deltaTime = this.scene.getEngine().getDeltaTime() / 1000.0;
-        this.moveDirection = Vector3.Zero()
-        this.v = this.input.verticalAxis;
-        this.h = this.input.horizontalAxis;
-
-        //---X AND Z MOVEMENT---//
-        let fwd = this.player.target.forward;
-        let right= this.player.target.right;
-        let correctedVertical = fwd.scaleInPlace(this.v);
-        let correctedHorizontal = right.scaleInPlace(this.h);
-        //movement based off of camera's view
-        let move = correctedHorizontal.addInPlace(correctedVertical);
-
-        this.moveDirection = new Vector3(move.normalize().x, 0, move.normalize().z);
-
-        //clamp the input value so that diagonal movement isn't twice as fast
-        let inputMag = Math.abs(this.h) + Math.abs(this.v);
-        if (inputMag < 0) {
-            this._inputAmt = 0;
-        } else if (inputMag > 1) {
-            this._inputAmt = 1;
-        } else {
-            this._inputAmt = inputMag;
+        this.player.mesh.frontVector = new Vector3(0,0,1)
+        this.horizontal = this.input.horizontalAxis;
+        this.vertical = this.input.verticalAxis;
+        //right
+        if(this.horizontal < 0){
+            this.player.mesh.rotation.y += .1;
+            this.player.mesh.frontVector = new Vector3(Math.sin(this.player.mesh.rotation.y),0,Math.cos(this.player.mesh.rotation.y));
+            this.camera.rotationOffset = 180;
+        }
+        // //left
+        if(this.horizontal > 0){
+            this.player.mesh.rotation.y -= .1;
+            this.player.mesh.frontVector = new Vector3(Math.sin(this.player.mesh.rotation.y),0,Math.cos(this.player.mesh.rotation.y));
+            this.camera.rotationOffset = 180;
+        }
+        //up
+        if(this.vertical < 0){
+            this.player.mesh.moveWithCollisions(this.player.mesh.frontVector.multiplyByFloats(PlayerController.PLAYER_SPEED,PlayerController.PLAYER_SPEED,PlayerController.PLAYER_SPEED));
+        }
+        // //down
+        if(this.vertical > 0){
+            this.player.mesh.moveWithCollisions(this.player.mesh.frontVector.multiplyByFloats(-PlayerController.PLAYER_SPEED,-PlayerController.PLAYER_SPEED,-PlayerController.PLAYER_SPEED));
         }
 
-        //---ROTATION---//
-        //check if there is movement to determine if rotation is needed
-        let input = new Vector3(this.input.horizontalAxis, 0, this.input.verticalAxis); //along which axis is the direction
-        if (input.length() === 0) {//if there's no input detected, prevent rotation and keep player in same rotation
-            return;
-        }
-        //rotation based on input
-        let angle = Math.atan2(this.input.horizontalAxis, this.input.verticalAxis);
-        angle += Math.PI;
-        this.targ = Quaternion.FromEulerAngles(0, angle, 0);
-        this.player.character.rotationQuaternion = Quaternion.Slerp(this.player.character.rotationQuaternion, this.targ, 10 * this.deltaTime);
-
-        this.moveDirection = this.moveDirection.scaleInPlace(this._inputAmt * PlayerController.PLAYER_SPEED);
-        this.player.mesh.moveWithCollisions(this.moveDirection.addInPlace(Vector3.Zero().scale(this.deltaTime * 2.8)));
     }
 
     updateCamera(){
-        // console.log(this.camera.rotationQuaternion)
-        // this.camera.rotationQuaternion = Quaternion.Slerp(new Quaternion(0,0,0,0), this.targ, 10 * this.deltaTime)
+        // console.log(this.input.mouseX)
+        // this.player.target.rotation = Vector3.Lerp(this.player.target.rotation,new Vector3(Tools.ToRadians(this.input.mouseY),Tools.ToRadians(this.input.mouseX),0),PlayerController.CAMERA_SPEED * this.deltaTime)
     }
 
     beforeRenderUpdate(){
@@ -75,17 +67,23 @@ class PlayerController extends GameObject{
     }
 
     setupPlayerCamera(){
-
-        this.camera = new UniversalCamera("third_person_camera", Vector3.Zero(), this.scene);
-        this.camera.inputs.clear();
-        this.camera.minZ = 0;
-        this.camera.fov = 0.8;
-        this.camera.mouseMin=-35;
-        this.camera.mouseMax= 45;
-        this.camera.parent = this.player.target;
-        this.camera.position =new Vector3(0.7, 1.35, -4);
-
+        this.camera = new FollowCamera("third_person",new Vector3(10,0,10), this.scene);
+        this.camera.heightOffset= 7;
+        this.camera.rotationOffset = 180;
+        this.camera.cameraAcceleration = .1;
+        this.camera.maxCameraSpeed = 1;
+        this.camera.lockedTarget = (this.player.character);
         this.scene.activeCamera = this.camera;
+        this.camera.attachControl( false)
+        this.camera.inputs.removeByType("FollowCameraKeyboardMoveInput");
+        //LIMITS
+        this.camera.lowerRadiusLimit = 10;
+        this.camera.upperRadiusLimit = 10
+        ;
+        // this.camera.upperRotationOffsetLimit = 5;
+        this.camera.lowerHeightOffsetLimit = this.camera.heightOffset;
+        this.camera.upperHeightOffsetLimit = this.camera.heightOffset;
+
         return this.camera;
     }
 }

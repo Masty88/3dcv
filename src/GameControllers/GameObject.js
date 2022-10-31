@@ -10,6 +10,8 @@ class GameObject {
         this.engine= GameObject.Engine;
         this.canvas= GameObject.Canvas;
 
+        this.deltaTime = this.scene.getEngine().getDeltaTime() / 1000.0;
+
         const beforeLoop = () => this.beforeLoop();
         this.scene.registerBeforeRender(beforeLoop);
         this.unregisterBeforeLoop = () => this.scene.unregisterBeforeRender(beforeLoop);

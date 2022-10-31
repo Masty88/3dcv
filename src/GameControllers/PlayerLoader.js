@@ -40,7 +40,6 @@ class PlayerLoader extends GameObject{
             //body is our actual player mesh
             this.body = root;
             this.body.parent = this.character;
-            this.body.rotationQuaternion.y = 0;
             this.body.isPickable = false; //so our raycasts dont hit ourself
             this.body.getChildMeshes().forEach(m => {
                 m.isPickable = false;
