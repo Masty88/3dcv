@@ -1,3 +1,5 @@
+import {Vector3} from "@babylonjs/core";
+
 class GameObject {
     static GameController;
     static Scene;

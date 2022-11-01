@@ -13,6 +13,7 @@
     "vue": "^3.2.13"
   },
   "devDependencies": {
+    "ammo.js": "https://github.com/kripken/ammo.js",
     "@babel/core": "^7.12.16",
     "@babel/eslint-parser": "^7.12.16",
     "@babylonjs/core": "^5.27.1",
