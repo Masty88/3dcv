@@ -27,19 +27,26 @@ class InputController extends GameObject{
 
     updateFromKeyboard(){
         if (this.inputMap["ArrowLeft"]) {
+            this.horizontal = Scalar.Lerp(this.horizontal, -1, 0.2);
             this.horizontalAxis = -1;
+
         } else if (this.inputMap["ArrowRight"]) {
+            this.horizontal = Scalar.Lerp(this.horizontal, 1, 0.2);
             this.horizontalAxis = 1;
         } else {
             this.horizontalAxis = 0;
+            this.horizontal = 0;
         }
 
         if (this.inputMap["ArrowUp"]) {
+            this.vertical = Scalar.Lerp(this.vertical, 1, 0.2);
             this.verticalAxis = 1;
         } else if (this.inputMap["ArrowDown"]) {
+            this.vertical = Scalar.Lerp(this.vertical, -1, 0.2);
             this.verticalAxis = -1;
         } else {
             this.verticalAxis = 0;
+            this.vertical = 0;
         }
 
         //Jump Checks (SPACE)

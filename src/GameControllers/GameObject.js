@@ -1,5 +1,3 @@
-import {Vector3} from "@babylonjs/core";
-
 class GameObject {
     static GameController;
     static Scene;
@@ -12,7 +10,6 @@ class GameObject {
         this.engine= GameObject.Engine;
         this.canvas= GameObject.Canvas;
 
-        this.deltaTime = this.scene.getEngine().getDeltaTime() / 1000.0;
 
         const beforeLoop = () => this.beforeLoop();
         this.scene.registerBeforeRender(beforeLoop);

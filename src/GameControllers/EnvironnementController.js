@@ -9,18 +9,30 @@ class EnvironnementController extends GameObject{
     }
 
      async load(){
-        // const ground= MeshBuilder.CreateGround("ground",{width:50, height:50},this.scene);
-         var ground = Mesh.CreateBox("ground", 24, this.scene);
+         const ground= MeshBuilder.CreateBox("ground",{width:50, height:4, depth: 50},this.scene);
          ground.scaling = new Vector3(1,.02,1);
+         ground.position= Vector3.Zero();
+         ground.physicsImpostor = new PhysicsImpostor(ground, PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.2, friction: 0.7 }, this.scene);
          ground.isPickable = true;
-         ground.checkCollisions = false
-         // const ground= MeshBuilder.CreateBox("ground",{width:50, height:50, depth: 10},this.scene);
-        // ground.position= Vector3.Zero();
-        // ground.physicsImpostor = new PhysicsImpostor(ground, PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.2, friction: 0.7 }, this.scene);
-        // const box = MeshBuilder.CreateBox("obstacle", {width: 5,height: 5},this.scene);
-        // box.physicsImpostor = new PhysicsImpostor(box, PhysicsImpostor.BoxImpostor,{mass: 1, restitution: 0, friction: 1.2}, this.scene);
-        // box.position = new Vector3(5,2,2);
-        // box.checkCollisions= true;
+         ground.checkCollisions = true;
+        const box = MeshBuilder.CreateBox("obstacle", {width: 5,height: 5},this.scene);
+        box.physicsImpostor = new PhysicsImpostor(box, PhysicsImpostor.BoxImpostor,{mass: 10, restitution: 0, friction: 1.2}, this.scene);
+        box.position = new Vector3(5,2,2);
+        box.checkCollisions= true;
+        box.isPickable = false;
+
+         // // Create player debug ellipsoid shape
+         // var ellipsoid = MeshBuilder.CreateCylinder("debug", {diameter: (box.ellipsoid.x *2), height: (box.ellipsoid.y * 2), subdivisions: 24});
+         // ellipsoid.position.copyFrom(box.position);
+         // ellipsoid.position.addInPlace(box.ellipsoidOffset);
+         // ellipsoid.isPickable = false
+         //
+         // // Set ellipsoid debug shape material
+         // var debugmat = new StandardMaterial("debugmat");
+         // debugmat.diffuseColor = new Color3(0, 1, 0);
+         // debugmat.wireframe = true;
+         // ellipsoid.material = debugmat;
+         // ellipsoid.parent= box;
         // groundMaterial.diffuseColor = Color3.FromHexString("#00b894")
         // ground.material= groundMaterial;
         // const assets=  await this.loadAssets();
