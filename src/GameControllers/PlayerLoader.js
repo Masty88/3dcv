@@ -18,7 +18,7 @@ class PlayerLoader extends GameObject{
         this.createCollisionMesh();
     }
     createCollisionMesh(){
-        this.mesh = MeshBuilder.CreateBox("player_container", {width: 1.2, depth: 4.9, height: 3});
+        this.mesh = MeshBuilder.CreateBox("player_container", {width: 1.2, depth: 3.4, height: 3});
         this.mesh.isVisible = true;
         this.mesh.isPickable = false;
         this.mesh.checkCollisions = true;
@@ -26,36 +26,31 @@ class PlayerLoader extends GameObject{
         //move origin of box collider to the bottom of the mesh (to match player mesh)
         this.mesh.bakeTransformIntoVertices(Matrix.Translation(0, 1.5, 0))
         //for collisions
-        this.mesh.ellipsoid = this.mesh.ellipsoid = new Vector3(1, 1.5, 2.9);
-        this.mesh.ellipsoidOffset = new Vector3(0, 1.5, 0);
+        // this.mesh.ellipsoid = this.mesh.ellipsoid = new Vector3(1, 1.5, 2);
+        // this.mesh.ellipsoidOffset = new Vector3(0, 1.5, 0);
 
-        // this.physicbody = this.mesh.clone("phsycbody",this.mesh,true,false)
-        // this.physicbody.isVisible = false;
-        // this.physicbody.isPickable = false;
-        this.mesh.physicsImpostor = new PhysicsImpostor(this.mesh, PhysicsImpostor.BoxImpostor,{mass: 1, restitution: 0, friction: 0.1}, this.scene);
+        // this.mesh.physicsImpostor = new PhysicsImpostor(this.mesh, PhysicsImpostor.BoxImpostor,{mass: 100, restitution: 0, friction: 0.1}, this.scene);
 
         // Create player debug ellipsoid shape
         // const ellipsoid = MeshBuilder.CreateSphere("debug", {diameterX: (this.mesh.ellipsoid.x * 2), diameterY: (this.mesh.ellipsoid.y * 2), diameterZ: (this.mesh.ellipsoid.z * 2), segments: 16}, this.scene);
         // ellipsoid.position.addInPlace(this.mesh.ellipsoidOffset);
         // ellipsoid.isPickable = false
-
-        // Set ellipsoid debug shape material
+        //
+        // // Set ellipsoid debug shape material
         // var debugmat = new StandardMaterial("debugmat");
         // debugmat.diffuseColor = new Color3(0, 1, 0);
         // debugmat.wireframe = true;
         // ellipsoid.material = debugmat;
         // ellipsoid.parent= this.mesh;
 
-         const yaw = Tools.ToRadians(0);
-         const pitch =  Tools.ToRadians(0);
-         const roll = Tools.ToRadians(0);
-         this.yprQuaternion = Quaternion.RotationYawPitchRoll(yaw, pitch, roll);
+         this.yaw = Tools.ToRadians(0);
+         this.pitch =  Tools.ToRadians(0);
+         this.roll = Tools.ToRadians(0);
+         this.yprQuaternion = Quaternion.RotationYawPitchRoll(this.yaw, this.pitch, this.roll);
+
 
         // parent.rotate(new BABYLON.Vector3(0, 0.5, 0), BABYLON.Tools.ToRadians(90));
         this.mesh.rotationQuaternion = this.yprQuaternion;
-
-
-
 
         //Character Parent
         this.character = new TransformNode("character_parent");
@@ -63,13 +58,12 @@ class PlayerLoader extends GameObject{
         this.character.isPickable = false;
 
         this.mesh.position = new Vector3(0,0,0)
-        // this.mesh.rotationQuaternion = new Quaternion(0, 1, 0, 0); // rotate the player mesh 180 since we want to see the back of the player
-
     }
 
     async loadPlayer(){
             const result= await SceneLoader.ImportMeshAsync(null,"/assets/","cat.glb", this.scene)
             const root = result.meshes[0];
+            root.scaling = new Vector3(7,7,-7)
 
             //body is our actual player mesh
             this.body = root;
@@ -78,12 +72,21 @@ class PlayerLoader extends GameObject{
             this.body.isPickable = false;
 
             //GET animations groups
-            this.body.idle = result.animationGroups[0];
-            this.body.walk_frw = result.animationGroups[1];
+            console.log(result.animationGroups)
+            this.body.idle = result.animationGroups[4];
+            this.body.walk_frw = result.animationGroups[0];
+            this.body.walk_back = result.animationGroups[5];
+            this.body.walk_left = result.animationGroups[6];
+            this.body.walk_right = result.animationGroups[7];
+            this.body.jumpUp = result.animationGroups[3];
+            this.body.attack = result.animationGroups[1];
+            this.body.landing= result.animationGroups[2]
 
             this.body.getChildMeshes().forEach(m => {
                 m.isPickable = false;
                 m.receiveShadows= true;
+                m.isVisible = false;
+                m.checkCollisions = false
             })
             return {
                     mesh: this.mesh,

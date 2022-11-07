@@ -1,7 +1,7 @@
 import GameObject from "./GameObject";
 import {
     ActionManager,
-    ExecuteCodeAction,
+    ExecuteCodeAction, PointerEventTypes,
     Scalar,
 } from "@babylonjs/core";
 
@@ -11,7 +11,6 @@ class InputController extends GameObject{
         super();
         this.scene.actionManager= new ActionManager(this.scene);
         this.inputMap={};
-
         this.scene.actionManager.registerAction(
             new ExecuteCodeAction(ActionManager.OnKeyDownTrigger,(event)=>{
                 this.inputMap[event.sourceEvent.key]= event.sourceEvent.type == "keydown";
@@ -24,6 +23,7 @@ class InputController extends GameObject{
             this.updateFromKeyboard();
         })
     }
+
 
     updateFromKeyboard(){
         if (this.inputMap["ArrowLeft"]) {
