@@ -18,18 +18,26 @@ class PlayerLoader extends GameObject{
         this.createCollisionMesh();
     }
     createCollisionMesh(){
-        this.mesh = MeshBuilder.CreateBox("player_container", {width: 1.2, depth: 3.4, height: 3});
+        this.mesh = MeshBuilder.CreateBox("player_container", {width: 2, depth: 3.3, height: 2}, this.scene);
         this.mesh.isVisible = true;
         this.mesh.isPickable = false;
-        this.mesh.checkCollisions = true;
+        this.mesh.checkCollisions = false;
+        // this.mesh.material.wireframe = true
+
+        // this.physicBody=MeshBuilder.CreateBox("player_container", {width: 2, depth: 1, height: 2}, this.scene);
+        // this.physicBody.position= new Vector3(this.mesh.position.x, this.mesh.position.y, this.mesh.position.z);
+        // this.physicBody.position.z = 1.45;
+        // this.physicBody.position.y = 0;
+        // this.physicBody.bakeTransformIntoVertices(Matrix.Translation(0, 1, 0));
+        // this.physicBody.physicsImpostor = new PhysicsImpostor(this.physicBody,PhysicsImpostor.BoxImpostor,{mass:10,friction:0.7});
 
         //move origin of box collider to the bottom of the mesh (to match player mesh)
-        this.mesh.bakeTransformIntoVertices(Matrix.Translation(0, 1.5, 0))
+        this.mesh.bakeTransformIntoVertices(Matrix.Translation(0, 1, 0))
         //for collisions
-        // this.mesh.ellipsoid = this.mesh.ellipsoid = new Vector3(1, 1.5, 2);
-        // this.mesh.ellipsoidOffset = new Vector3(0, 1.5, 0);
+        this.mesh.ellipsoid = this.mesh.ellipsoid = new Vector3(2, 1, 1.8);
+        this.mesh.ellipsoidOffset = new Vector3(0, 1.5, 0);
 
-        // this.mesh.physicsImpostor = new PhysicsImpostor(this.mesh, PhysicsImpostor.BoxImpostor,{mass: 100, restitution: 0, friction: 0.1}, this.scene);
+         this.mesh.physicsImpostor = new PhysicsImpostor(this.mesh, PhysicsImpostor.BoxImpostor,{mass: 100, restitution: 0, friction: 0.1}, this.scene);
 
         // Create player debug ellipsoid shape
         // const ellipsoid = MeshBuilder.CreateSphere("debug", {diameterX: (this.mesh.ellipsoid.x * 2), diameterY: (this.mesh.ellipsoid.y * 2), diameterZ: (this.mesh.ellipsoid.z * 2), segments: 16}, this.scene);
@@ -57,7 +65,7 @@ class PlayerLoader extends GameObject{
         this.character.parent = this.mesh;
         this.character.isPickable = false;
 
-        this.mesh.position = new Vector3(0,0,0)
+        this.mesh.position = new Vector3(-3,0,0)
     }
 
     async loadPlayer(){
@@ -72,7 +80,6 @@ class PlayerLoader extends GameObject{
             this.body.isPickable = false;
 
             //GET animations groups
-            console.log(result.animationGroups)
             this.body.idle = result.animationGroups[4];
             this.body.walk_frw = result.animationGroups[0];
             this.body.walk_back = result.animationGroups[5];
@@ -85,8 +92,7 @@ class PlayerLoader extends GameObject{
             this.body.getChildMeshes().forEach(m => {
                 m.isPickable = false;
                 m.receiveShadows= true;
-                m.isVisible = false;
-                m.checkCollisions = false
+                // m.isVisible = false;
             })
             return {
                     mesh: this.mesh,

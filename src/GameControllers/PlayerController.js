@@ -16,7 +16,7 @@ import {
 } from "@babylonjs/core";
 
 class PlayerController extends GameObject{
-    static PLAYER_SPEED= 0.4;
+    static PLAYER_SPEED= 0.2;
     static JUMP_FORCE = 0.8;
     static CAMERA_SPEED = 10 ;
     static GRAVITY = -2.8;
@@ -94,9 +94,6 @@ class PlayerController extends GameObject{
         }
 
         if(this.jumpKeyDown){
-            console.log("here")
-            console.log(this.jump)
-            // this.jump.onAnimationEnd = ()=>{console.log("end")}
             this.currentAnimation= this.jump;
         }
 
@@ -116,26 +113,30 @@ class PlayerController extends GameObject{
         this.horizontal = this.input.horizontalAxis;
         this.vertical = this.input.verticalAxis;
         this.eulerRotation = this.player.mesh.rotationQuaternion.toEulerAngles()
-        this.player.mesh.frontVector = new Vector3(Math.sin(this.eulerRotation.y),0,Math.cos(this.eulerRotation.y));
+
         //right
         if(this.horizontal > 0){
+            this.player.mesh.frontVector = new Vector3(Math.sin(this.eulerRotation.y),0,Math.cos(this.eulerRotation.y));
             var axis2 = new Vector3(0, -1, 0);
-            this.angle -= 0.02;
+            this.angle -= 0.05;
             this.player.mesh.rotationQuaternion= Quaternion.RotationAxis(axis2, this.angle);
         }
         //left
         if(this.horizontal < 0){
+            this.player.mesh.frontVector = new Vector3(Math.sin(this.eulerRotation.y),0,Math.cos(this.eulerRotation.y));
             var axis = new Vector3(0, -1, 0);
-            this.angle += 0.02;
+            this.angle += 0.05;
             this.player.mesh.rotationQuaternion= Quaternion.RotationAxis(axis, this.angle);
         }
         //up
         if(this.vertical > 0){
+            this.player.mesh.frontVector = new Vector3(Math.sin(this.eulerRotation.y),0,Math.cos(this.eulerRotation.y));
             this.player.mesh.moveWithCollisions(this.player.mesh.frontVector.multiplyByFloats(PlayerController.PLAYER_SPEED,PlayerController.PLAYER_SPEED,PlayerController.PLAYER_SPEED));
         }
         // //down
         if(this.vertical < 0){
-            this.player.mesh.moveWithCollisions(this.player.mesh.frontVector.multiplyByFloats(-PlayerController.PLAYER_SPEED,-PlayerController.PLAYER_SPEED,-PlayerController.PLAYER_SPEED));
+            this.player.mesh.frontVector = new Vector3(Math.sin(this.eulerRotation.y),0,Math.cos(this.eulerRotation.y));
+            this.player.mesh.moveWithCollisions(this.player.mesh.frontVector.multiplyByFloats(-PlayerController.PLAYER_SPEED,PlayerController.PLAYER_SPEED,-PlayerController.PLAYER_SPEED));
         }
 
     }
@@ -159,7 +160,7 @@ class PlayerController extends GameObject{
 
 
     isGrounded(){
-        if(this.floorRayCast(0,0,0.6).equals(Vector3.Zero())){
+        if(this.floorRayCast(0,0,0.8).equals(Vector3.Zero())){
             return false
         }else{
             return true;
@@ -168,7 +169,6 @@ class PlayerController extends GameObject{
 
     updateGroundDetection(){
         if(!this.isGrounded()){
-            console.log("not ground")
             this.gravity = this.gravity.addInPlace(Vector3.Up().scale(this.deltaTime * PlayerController.GRAVITY));
             this.grounded = false;
         }
@@ -200,19 +200,12 @@ class PlayerController extends GameObject{
         if(this.input.jumpKeyDown && this.jumpCount > 0) {
             this.gravity.y = PlayerController.JUMP_FORCE;
             this.jumpCount--;
-            // this.isJumping = true;
+            this.isJumping = true;
         }
     }
 
     playerCollision(){
-        this.player.mesh.onCollide=(m)=>{
-            // console.log("collide")
-            if(m.physicsImpostor){
-                m.physicsImpostor.applyImpulse(this.player.mesh.frontVector.scale(10), m.getAbsolutePosition().add(this.player.mesh.position))
-            }
 
-            // m.moveWithCollisions(new Vector3(PlayerController.PLAYER_SPEED,0,PlayerController.PLAYER_SPEED))
-        }
         // this.obstacle = this.scene.getMeshByName("obstacle")
         // this.obstacle.moveWithCollisions(Vector3.Zero())
         // this.player.mesh.onCollide=(m)=>{
@@ -235,7 +228,6 @@ class PlayerController extends GameObject{
     }
 
     activatePlayerCamera(){
-        console.log(this.camera)
         this.beforeLoop= ()=>{
             this.beforeRenderUpdate();
         }
@@ -266,8 +258,7 @@ class PlayerController extends GameObject{
 
         this.camera.inputs.removeByType("FollowCameraKeyboardMoveInput");
         // this.camera.inputs.add(new FollowCameraPointersInput())
-        console.log(BaseCameraPointersInput.prototype.onButtonUp(()=>console.log("test")))
-        // FollowCameraPointersInput.onButtonUp(()=>{console.log("up")})
+        // console.log(BaseCameraPointersInput.prototype.onButtonUp(()=>console.log("test")))
 
         //LIMITS
         // this.camera.lowerRadiusLimit = 10;
