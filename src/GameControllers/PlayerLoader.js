@@ -18,10 +18,9 @@ class PlayerLoader extends GameObject{
         this.createCollisionMesh();
     }
     createCollisionMesh(){
-        this.mesh = MeshBuilder.CreateBox("player_container", {width: 2, depth: 3.3, height: 2}, this.scene);
-        this.mesh.isVisible = true;
+        this.mesh = MeshBuilder.CreateBox("player_container", {width: 2, depth: 3.5, height: 2}, this.scene);
+        this.mesh.isVisible = false;
         this.mesh.isPickable = false;
-        this.mesh.checkCollisions = false;
         // this.mesh.material.wireframe = true
 
         // this.physicBody=MeshBuilder.CreateBox("player_container", {width: 2, depth: 1, height: 2}, this.scene);
@@ -37,7 +36,7 @@ class PlayerLoader extends GameObject{
         this.mesh.ellipsoid = this.mesh.ellipsoid = new Vector3(2, 1, 1.8);
         this.mesh.ellipsoidOffset = new Vector3(0, 1.5, 0);
 
-         this.mesh.physicsImpostor = new PhysicsImpostor(this.mesh, PhysicsImpostor.BoxImpostor,{mass: 100, restitution: 0, friction: 0.1}, this.scene);
+         // this.mesh.physicsImpostor = new PhysicsImpostor(this.mesh, PhysicsImpostor.BoxImpostor,{mass: 2, restitution: 1, friction: 0.1}, this.scene);
 
         // Create player debug ellipsoid shape
         // const ellipsoid = MeshBuilder.CreateSphere("debug", {diameterX: (this.mesh.ellipsoid.x * 2), diameterY: (this.mesh.ellipsoid.y * 2), diameterZ: (this.mesh.ellipsoid.z * 2), segments: 16}, this.scene);

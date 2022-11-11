@@ -31,18 +31,21 @@ class GameController{
 
         const camera = new FreeCamera("camera1", new Vector3(0, 5, -10), scene);
         camera.setTarget(Vector3.Zero());
-        camera.inputs.removeByType("FreeCameraKeyboardMoveInput");
+        // camera.inputs.removeByType("FreeCameraKeyboardMoveInput");
+        camera.attachControl(true)
 
         //Physics engine
         const Ammo = await ammo()
-        scene.enablePhysics(new Vector3(0,-9.81,0),new AmmoJSPlugin(true, Ammo));
+        // scene.enablePhysics(new Vector3(0,-9.81,0),new AmmoJSPlugin(true, Ammo));
+        scene.enablePhysics(null, new AmmoJSPlugin());
     }
 
     async setUpGame(scene,canvas){
 
-        scene.collisionsEnabled = true;
+        GameObject.Engine.displayLoadingUI()
 
         new HemisphericLight("light", Vector3.Up(), scene);
+
 
         this.environnemet= new EnvironnementController();
         await this.environnemet.load();

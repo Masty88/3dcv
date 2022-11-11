@@ -17,6 +17,7 @@ import {
 
 class PlayerController extends GameObject{
     static PLAYER_SPEED= 0.2;
+    static MAX_SPEED= 10;
     static JUMP_FORCE = 0.8;
     static CAMERA_SPEED = 10 ;
     static GRAVITY = -2.8;
@@ -123,14 +124,21 @@ class PlayerController extends GameObject{
         }
         //left
         if(this.horizontal < 0){
+            // this.player.mesh.physicsImpostor.setAngularVelocity(new Vector3(0, -2 , 0));
             this.player.mesh.frontVector = new Vector3(Math.sin(this.eulerRotation.y),0,Math.cos(this.eulerRotation.y));
             var axis = new Vector3(0, -1, 0);
-            this.angle += 0.05;
+            this.angle += 0.02;
             this.player.mesh.rotationQuaternion= Quaternion.RotationAxis(axis, this.angle);
         }
         //up
         if(this.vertical > 0){
             this.player.mesh.frontVector = new Vector3(Math.sin(this.eulerRotation.y),0,Math.cos(this.eulerRotation.y));
+            this.player.mesh.frwVectore = this.getForwardVector(this.player.mesh);
+            // let velocity = this.player.mesh.physicsImpostor.getLinearVelocity();
+            // console.log(velocity)
+            // if (Math.abs(velocity.length()) < PlayerController.MAX_SPEED) {
+                // this.player.mesh.physicsImpostor.setLinearVelocity(velocity.add(this.player.mesh.frontVector.multiplyByFloats(PlayerController.PLAYER_SPEED,PlayerController.PLAYER_SPEED,PlayerController.PLAYER_SPEED)));
+            // }
             this.player.mesh.moveWithCollisions(this.player.mesh.frontVector.multiplyByFloats(PlayerController.PLAYER_SPEED,PlayerController.PLAYER_SPEED,PlayerController.PLAYER_SPEED));
         }
         // //down
@@ -139,7 +147,20 @@ class PlayerController extends GameObject{
             this.player.mesh.moveWithCollisions(this.player.mesh.frontVector.multiplyByFloats(-PlayerController.PLAYER_SPEED,PlayerController.PLAYER_SPEED,-PlayerController.PLAYER_SPEED));
         }
 
+        // if(this.vertical === 0){
+            // this.player.mesh.physicsImpostor.setLinearVelocity(Vector3.Zero())
+            // this.player.mesh.physicsImpostor.setAngularVelocity(Vector3.Zero())
+        // }
+
     }
+
+    getForwardVector(mesh) {
+        mesh.computeWorldMatrix(true);
+        this.forward_local = new Vector3(0, 0, 1);
+        this.worldMatrix = mesh.getWorldMatrix();
+        return Vector3.TransformNormal(this.forward_local, this.worldMatrix);
+    }
+
 
     //Check ground with ray
 
@@ -208,15 +229,16 @@ class PlayerController extends GameObject{
 
         // this.obstacle = this.scene.getMeshByName("obstacle")
         // this.obstacle.moveWithCollisions(Vector3.Zero())
-        // this.player.mesh.onCollide=(m)=>{
-        //     if(m.physicsImpostor){
-        //         console.log("collide")
-        //         // console.log(m.getAbsolutePosition().add(this.player.mesh.position));
-        //         // console.log(this.player.mesh.frontVector.scale(100));
-        // //         // m.physicsImpostor.applyImpulse(this.player.mesh.frontVector, m.getAbsolutePosition().add(this.player.mesh.position))
+        this.player.mesh.onCollide=(m)=>{
+            if(m.name.includes("act")){
+                console.log(m.parent)
+                m.parent.physicsImpostor.applyImpulse(this.player.mesh.frontVector.scale(5), m.parent.getAbsolutePosition())
+                // console.log(m.getAbsolutePosition().add(this.player.mesh.position));
+                // console.log(this.player.mesh.frontVector.scale(100));
+        //         // m.physicsImpostor.applyImpulse(this.player.mesh.frontVector, m.getAbsolutePosition().add(this.player.mesh.position))
         //         m.physicsImpostor.applyForce(this.player.mesh.frontVector.scale(5000000), m.getAbsolutePosition().add(this.player.mesh.frontVector))
-        //     }
-        // }
+            }
+        }
     }
 
 
