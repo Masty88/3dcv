@@ -5,9 +5,9 @@ import {
     MeshBuilder,
     StandardMaterial,
     Color3,
-    ArcRotateCamera, AmmoJSPlugin
+    ArcRotateCamera, AmmoJSPlugin, PhysicsImpostor, Quaternion
 } from "@babylonjs/core"
-import ammo  from 'ammo.js';
+import * as ammo  from 'ammo.js';
 import GameObject from "@/GameControllers/GameObject";
 import EnvironnementController from "@/GameControllers/EnvironnementController";
 import "@babylonjs/core/Debug/debugLayer";
@@ -23,21 +23,24 @@ class GameController{
         GameObject.Scene = scene;
         GameObject.Engine= engine;
         GameObject.Canvas= canvas;
-        this.activatePhysics(scene).then(r => this.setUpGame(scene))
+        //this.activatePhysics(scene).then(r => this.setUpGame(scene))
+        this.activatePhysics(scene,engine).then(r => this.setUpGame(scene))
     }
 
-    async activatePhysics(scene){
-        GameObject.Engine.displayLoadingUI()
+    async activatePhysics(scene,engine){
+        //GameObject.Engine.displayLoadingUI()
 
         const camera = new FreeCamera("camera1", new Vector3(0, 5, -10), scene);
         camera.setTarget(Vector3.Zero());
-        // camera.inputs.removeByType("FreeCameraKeyboardMoveInput");
+        camera.inputs.removeByType("FreeCameraKeyboardMoveInput");
         camera.attachControl(true)
-
         //Physics engine
-        const Ammo = await ammo()
-        // scene.enablePhysics(new Vector3(0,-9.81,0),new AmmoJSPlugin(true, Ammo));
-        scene.enablePhysics(null, new AmmoJSPlugin());
+        this.Ammo = await ammo()
+        const worldMin = this.Ammo.btVector3(-1000,-1000,-1000);
+        const worldMax = this.Ammo.btVector3(1000,1000,1000);
+        scene.enablePhysics(new Vector3(0,-9.81,0),new AmmoJSPlugin(true, this.Ammo));
+        scene.getPhysicsEngine().setTimeStep(1 / 60)
+        scene.getPhysicsEngine().setSubTimeStep(3);
     }
 
     async setUpGame(scene,canvas){
@@ -46,15 +49,14 @@ class GameController{
 
         new HemisphericLight("light", Vector3.Up(), scene);
 
+        this.environnemet= new EnvironnementController(this.Ammo);
+        this.environnemet.load();
 
-        this.environnemet= new EnvironnementController();
-        await this.environnemet.load();
-
-        this.playerAsset= new PlayerLoader()
+        this.playerAsset= new PlayerLoader(this.Ammo)
         await this.playerAsset.loadPlayer()
 
         this.input= new InputController();
-        this.player= new PlayerController(this.input,this.playerAsset);
+        this.player= new PlayerController(this.input,this.playerAsset,this.Ammo);
         this.player.activatePlayerCamera();
 
         await scene.debugLayer.show();

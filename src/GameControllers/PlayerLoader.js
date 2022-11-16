@@ -11,72 +11,81 @@ import {
     Vector3
 } from "@babylonjs/core";
 import PlayerController from "@/GameControllers/PlayerController";
+import ammo from "ammo.js";
 
 class PlayerLoader extends GameObject{
-    constructor() {
+    constructor(ammo) {
         super();
-        this.createCollisionMesh();
+        this.Ammo = ammo
+        this.kinematicController();
     }
-    createCollisionMesh(){
-        this.mesh = MeshBuilder.CreateBox("player_container", {width: 2, depth: 3.5, height: 2}, this.scene);
-        this.mesh.isVisible = false;
-        this.mesh.isPickable = false;
-        // this.mesh.material.wireframe = true
+     kinematicController(){
 
-        // this.physicBody=MeshBuilder.CreateBox("player_container", {width: 2, depth: 1, height: 2}, this.scene);
-        // this.physicBody.position= new Vector3(this.mesh.position.x, this.mesh.position.y, this.mesh.position.z);
-        // this.physicBody.position.z = 1.45;
-        // this.physicBody.position.y = 0;
-        // this.physicBody.bakeTransformIntoVertices(Matrix.Translation(0, 1, 0));
-        // this.physicBody.physicsImpostor = new PhysicsImpostor(this.physicBody,PhysicsImpostor.BoxImpostor,{mass:10,friction:0.7});
-
-        //move origin of box collider to the bottom of the mesh (to match player mesh)
-        this.mesh.bakeTransformIntoVertices(Matrix.Translation(0, 1, 0))
-        //for collisions
-        this.mesh.ellipsoid = this.mesh.ellipsoid = new Vector3(2, 1, 1.8);
-        this.mesh.ellipsoidOffset = new Vector3(0, 1.5, 0);
-
-         // this.mesh.physicsImpostor = new PhysicsImpostor(this.mesh, PhysicsImpostor.BoxImpostor,{mass: 2, restitution: 1, friction: 0.1}, this.scene);
-
-        // Create player debug ellipsoid shape
-        // const ellipsoid = MeshBuilder.CreateSphere("debug", {diameterX: (this.mesh.ellipsoid.x * 2), diameterY: (this.mesh.ellipsoid.y * 2), diameterZ: (this.mesh.ellipsoid.z * 2), segments: 16}, this.scene);
-        // ellipsoid.position.addInPlace(this.mesh.ellipsoidOffset);
-        // ellipsoid.isPickable = false
-        //
-        // // Set ellipsoid debug shape material
-        // var debugmat = new StandardMaterial("debugmat");
-        // debugmat.diffuseColor = new Color3(0, 1, 0);
-        // debugmat.wireframe = true;
-        // ellipsoid.material = debugmat;
-        // ellipsoid.parent= this.mesh;
-
-         this.yaw = Tools.ToRadians(0);
-         this.pitch =  Tools.ToRadians(0);
-         this.roll = Tools.ToRadians(0);
-         this.yprQuaternion = Quaternion.RotationYawPitchRoll(this.yaw, this.pitch, this.roll);
+       //this.shape =  new this.Ammo.btBoxShape(new this.Ammo.btVector3(1, 0.1, 2));
+       this.shape =  new this.Ammo.btCapsuleShape( 0.4,0.1);
+       this.ghostObject = new this.Ammo.btPairCachingGhostObject();
 
 
-        // parent.rotate(new BABYLON.Vector3(0, 0.5, 0), BABYLON.Tools.ToRadians(90));
-        this.mesh.rotationQuaternion = this.yprQuaternion;
+        const transform = new this.Ammo.btTransform();
+        console.log(transform)
+        transform.setIdentity();
+        transform.setOrigin(new this.Ammo.btVector3(0, 1, 0));
+        transform.setRotation(new this.Ammo.btQuaternion(-1,0, 0 ,0))
+        // console.log(transform.getRotation(new this.Ammo.btQuaternion(0,-1,0,0)))
 
-        //Character Parent
-        this.character = new TransformNode("character_parent");
-        this.character.parent = this.mesh;
-        this.character.isPickable = false;
+        this.ghostObject.setWorldTransform(transform);
+        this.ghostObject.setCollisionShape(this.shape);
+        this.ghostObject.setCollisionFlags(16)
+        this.ghostObject.setActivationState(4);
+        this.ghostObject.activate(true);
+        console.log(this.ghostObject)
 
-        this.mesh.position = new Vector3(-3,0,0)
+        this.controllerK = new this.Ammo.btKinematicCharacterController(
+            this.ghostObject,
+            this.shape,
+            0.2,
+            1
+        );
+
+        // console.log(Ammo.btKinematicCharacterController.prototype)
+         console.log(this.controllerK)
+        this.controllerK.setGravity(10);
+        this.controllerK.canJump();
+        this.controllerK.setMaxJumpHeight(1.3);
+        this.controllerK.setJumpSpeed(8);
+        // this.controllerK.setUpInterpolate(true);
+
+
+        const world = this.scene.getPhysicsEngine().getPhysicsPlugin().world;
+        console.log(world)
+        world.addCollisionObject(this.ghostObject, 32, 3);
+        world.addAction(this.controllerK);
+        this.controllerK.setUseGhostSweepTest(false);
+
+
+         //
+
+         //this.ghostObject.getWorldTransform().setRotation(new this.Ammo.btQuaternion(0, 0, -1, 1))
+
+       //this.body = MeshBuilder.CreateBox("player", { size: 1 }, this.scene);
+       //this.body.position.y = 10;
+
     }
 
     async loadPlayer(){
             const result= await SceneLoader.ImportMeshAsync(null,"/assets/","cat.glb", this.scene)
             const root = result.meshes[0];
-            root.scaling = new Vector3(7,7,-7)
+            // root.rotationQuaternion.y =0;
+            // root.rotationQuaternion.x =0;
+            // root.rotationQuaternion.z =0;
+            root.scaling = new Vector3(3,3,-3)
 
-            //body is our actual player mesh
+            // body is our actual player mesh
             this.body = root;
-            this.body.parent = this.mesh;
+            // this.body = MeshBuilder.CreateBox("sphere", { size: 1 }, this.scene);
             //so our raycasts dont hit ourself
             this.body.isPickable = false;
+
 
             //GET animations groups
             this.body.idle = result.animationGroups[4];
@@ -94,7 +103,7 @@ class PlayerLoader extends GameObject{
                 // m.isVisible = false;
             })
             return {
-                    mesh: this.mesh,
+                   body: this.body,
                     animationGroups: result.animationGroups
             }
     }
