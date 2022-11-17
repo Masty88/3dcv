@@ -39,8 +39,9 @@ class GameController{
         const worldMin = this.Ammo.btVector3(-1000,-1000,-1000);
         const worldMax = this.Ammo.btVector3(1000,1000,1000);
         scene.enablePhysics(new Vector3(0,-9.81,0),new AmmoJSPlugin(true, this.Ammo));
-        scene.getPhysicsEngine().setTimeStep(1 / 60)
-        scene.getPhysicsEngine().setSubTimeStep(3);
+        // scene.getPhysicsEngine().setTimeStep(1 / 60)
+        // scene.getPhysicsEngine().setSubTimeStep(3);
+        //scene.getPhysicsEngine().getPhysicsPlugin().setFixedTimeStep(1/120);
     }
 
     async setUpGame(scene,canvas){

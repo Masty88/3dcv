@@ -16,7 +16,7 @@ import {
 } from "@babylonjs/core";
 
 class PlayerController extends GameObject{
-    static PLAYER_SPEED= 0.01;
+    static PLAYER_SPEED= 0.03;
     static MAX_SPEED= 10;
     static JUMP_FORCE = 0.8;
     static CAMERA_SPEED = 10 ;
@@ -32,7 +32,7 @@ class PlayerController extends GameObject{
         this.player = player;
         this.isJumping = false
         this.Ammo = ammo;
-        //this.getAnimationGroup();
+        this.getAnimationGroup();
         this.setupPlayerCamera();
         this.getPhysic()
     }
@@ -86,7 +86,7 @@ class PlayerController extends GameObject{
             this.isAnimating= true}
 
 
-        else if(this.grounded){
+        else if(this.input.vertical === 0 ){
             this.currentAnimation= this.idle;
             this.isIdle=true
             this.isAnimating= false;
@@ -108,8 +108,6 @@ class PlayerController extends GameObject{
         this.xform = this.player.ghostObject.getWorldTransform();
         this.walkDirection = new this.Ammo.btVector3(0.0, 0.0, 0.0);
         this.angle = 0.01
-        // this.orn = this.player.ghostObject.getWorldTransform().getBasis();
-        //this.orn.setEulerZYX(Math.PI/2,0,0);
     }
 
     updateFromControl(){
@@ -134,15 +132,11 @@ class PlayerController extends GameObject{
             }
             if(this.input.horizontal >0){
                 this.angle -= 0.02;
-                // this.orn = this.player.ghostObject.getWorldTransform().getBasis();
-                // this.orn.setEulerZYX(0,this.angle,0);
                 const q = this.getQuartenionFromAxisAngle([0, 1, 0], this.angle);
                 this.player.ghostObject.getWorldTransform().setRotation(q)
             }
         if(this.input.horizontal < 0){
             this.angle += 0.02;
-             // const orn = this.player.ghostObject.getWorldTransform().getBasis();
-             // orn.setEulerZYX(0,this.angle,0);
             const q = this.getQuartenionFromAxisAngle([0, 1, 0], this.angle);
             this.player.ghostObject.getWorldTransform().setRotation(q)
         }
@@ -152,25 +146,20 @@ class PlayerController extends GameObject{
             if (this.input.vertical === 0) {
                 this.walkDirection = new this.Ammo.btVector3(0, 0, 0);
             }
-
             this.player.controllerK.setWalkDirection(this.walkDirection);
             this.update();
-        // })
     }
 
     update(){
         this.t = this.player.controllerK.getGhostObject().getWorldTransform();
         this.p = this.t.getOrigin();
         let r = this.t.getRotation();
-        this.pos = new Vector3(this.t.getOrigin().x(), this.t.getOrigin().y() - 0.4 , this.t.getOrigin().z())
+        this.pos = new Vector3(this.t.getOrigin().x(), this.t.getOrigin().y() - 0.7 , this.t.getOrigin().z())
         this.player.body.position = this.pos
         if (!this.player.body.rotationQuaternion) {
             this.player.body.rotationQuaternion = Quaternion.FromEulerAngles(this.player.body.rotation.x,this.player.body.rotation.y , this.player.body.rotation.z);
         }
         this.player.body.rotationQuaternion.set(r.w(), r.x(), r.y(), r.z())
-        // this.orn.setEulerZYX(this.r.z(),this.r.y(),this.r.x())
-       // this.player.body.rotationQuaternion.y= r.y();
-        //console.log(this.player.body.rotationQuaternion)
     }
 
     getQuartenionFromAxisAngle(axis, angle) {
@@ -182,10 +171,8 @@ class PlayerController extends GameObject{
     }
 
 
-
     beforeRenderUpdate(){
-        //this.playerCollision()
-       //this.animatePlayer();
+        this.animatePlayer();
         this.updateFromControl();
         //this.updateGroundDetection();
     }
@@ -198,16 +185,6 @@ class PlayerController extends GameObject{
     }
 
     setupPlayerCamera(){
-
-        //Universal Camera
-        // this.camera = new ArcRotateCamera("arc", 0, Math.PI,5,new Vector3(0,7,0), this.scene)
-        // this.camera.setPosition(new Vector3(0,12,-15))
-        // this.camera.lockedTarget = this.player.character;
-        // this.camera.setTarget(this.player.mesh, true, true, true);
-        // this.camera.useFramingBehavior = true;
-        // this.camera.framingBehavior.framingTime = 10;
-        // this.scene.activeCamera = this.camera;
-
 
         // Follow camera
         this.camera = new FollowCamera("third_person",new Vector3(10,0,8), this.scene);
@@ -230,30 +207,6 @@ class PlayerController extends GameObject{
         // this.camera.lowerHeightOffsetLimit = this.camera.heightOffset;
         // this.camera.upperHeightOffsetLimit = this.camera.heightOffset;
 
-        //root camera parent that handles positioning of the camera to follow the player
-        // this._camRoot = new TransformNode("root");
-        // this._camRoot.position = new Vector3(0, 0, 0); //initialized at (0,0,0)
-        // //to face the player from behind (180 degrees)
-        // this._camRoot.rotation = new Vector3(0, Math.PI, 0);
-        //
-        // //rotations along the x-axis (up/down tilting)
-        // let yTilt = new TransformNode("ytilt");
-        // //adjustments to camera view to point down at our player
-        // yTilt.rotation = new Vector3(0, 0, 0);
-        // yTilt.parent = this._camRoot;
-        // this.yTilt= yTilt
-        //     //our actual camera that's pointing at our root's position
-        //     this.camera=new ArcRotateCamera("Camera", 0, Math.PI/2,1, Vector3.Zero(), this.scene)
-        //     this.camera.position=new Vector3(0, 2, -15)
-        //     this.camera.inputs.removeByType("ArcRotateCameraKeyboardMoveInput")
-        //     this.camera.lockedTarget = this._camRoot.position;
-        //     this.camera.attachControl(this.engine.getRenderingCanvas(),true)
-        //     this.camera.upperRadiusLimit=35;
-        //     this.camera.lowerRadiusLimit=10;
-        //     this.camera.upperBetaLimit=1.5;
-        //     this.camera.fov = 0.35;
-        //
-        // this.camera.parent = yTilt;
         this.scene.activeCamera = this.camera;
         return this.camera;
     }
