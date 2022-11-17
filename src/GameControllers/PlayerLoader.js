@@ -19,7 +19,7 @@ class PlayerLoader extends GameObject{
     }
     createCollisionMesh(){
         this.mesh = MeshBuilder.CreateBox("player_container", {width: 2, depth: 3.5, height: 2}, this.scene);
-        this.mesh.isVisible = false;
+        this.mesh.isVisible = true;
         this.mesh.isPickable = false;
         // this.mesh.material.wireframe = true
 
@@ -31,12 +31,12 @@ class PlayerLoader extends GameObject{
         // this.physicBody.physicsImpostor = new PhysicsImpostor(this.physicBody,PhysicsImpostor.BoxImpostor,{mass:10,friction:0.7});
 
         //move origin of box collider to the bottom of the mesh (to match player mesh)
-        this.mesh.bakeTransformIntoVertices(Matrix.Translation(0, 1, 0))
+        // this.mesh.bakeTransformIntoVertices(Matrix.Translation(0, 1, 0))
         //for collisions
-        this.mesh.ellipsoid = this.mesh.ellipsoid = new Vector3(2, 1, 1.8);
-        this.mesh.ellipsoidOffset = new Vector3(0, 1.5, 0);
+        // this.mesh.ellipsoid = this.mesh.ellipsoid = new Vector3(2, 1, 1.8);
+        // this.mesh.ellipsoidOffset = new Vector3(0, 1.5, 0);
 
-         // this.mesh.physicsImpostor = new PhysicsImpostor(this.mesh, PhysicsImpostor.BoxImpostor,{mass: 2, restitution: 1, friction: 0.1}, this.scene);
+        this.mesh.physicsImpostor = new PhysicsImpostor(this.mesh, PhysicsImpostor.BoxImpostor,{mass: 40, restitution: 1, friction: 10}, this.scene);
 
         // Create player debug ellipsoid shape
         // const ellipsoid = MeshBuilder.CreateSphere("debug", {diameterX: (this.mesh.ellipsoid.x * 2), diameterY: (this.mesh.ellipsoid.y * 2), diameterZ: (this.mesh.ellipsoid.z * 2), segments: 16}, this.scene);
@@ -54,26 +54,43 @@ class PlayerLoader extends GameObject{
          this.pitch =  Tools.ToRadians(0);
          this.roll = Tools.ToRadians(0);
          this.yprQuaternion = Quaternion.RotationYawPitchRoll(this.yaw, this.pitch, this.roll);
+        //
+        //
+        // // parent.rotate(new BABYLON.Vector3(0, 0.5, 0), BABYLON.Tools.ToRadians(90));
+        //
+         //this.mesh.rotationQuaternion = this.yprQuaternion;
 
-
-        // parent.rotate(new BABYLON.Vector3(0, 0.5, 0), BABYLON.Tools.ToRadians(90));
-        this.mesh.rotationQuaternion = this.yprQuaternion;
+        this.mesh.rotationQuaternion = Quaternion.FromEulerAngles(0,Math.PI / 2,0);
 
         //Character Parent
         this.character = new TransformNode("character_parent");
         this.character.parent = this.mesh;
         this.character.isPickable = false;
 
-        this.mesh.position = new Vector3(-3,0,0)
+        this.startPosition = new TransformNode("start_pos", this.scene);
+        this.startPosition.position = new Vector3(93.76,1,0.47)
+        this.mesh.position = this.startPosition.position
     }
 
     async loadPlayer(){
             const result= await SceneLoader.ImportMeshAsync(null,"/assets/","cat.glb", this.scene)
             const root = result.meshes[0];
-            root.scaling = new Vector3(7,7,-7)
+            root.scaling = new Vector3(2,2,-2)
+
+        // this.yaw = Tools.ToRadians(-90);
+        // this.pitch =  Tools.ToRadians(0);
+        // this.roll = Tools.ToRadians(0);
+        // this.yprQuaternion = Quaternion.RotationYawPitchRoll(this.yaw, this.pitch, this.roll);
+
+
+        // parent.rotate(new BABYLON.Vector3(0, 0.5, 0), BABYLON.Tools.ToRadians(90));
+
+
 
             //body is our actual player mesh
             this.body = root;
+            // this.body.rotationQuaternion = Quaternion.FromEulerAngles(0,Math.PI / 2,0);
+
             this.body.parent = this.mesh;
             //so our raycasts dont hit ourself
             this.body.isPickable = false;

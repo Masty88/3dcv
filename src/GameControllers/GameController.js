@@ -36,8 +36,11 @@ class GameController{
 
         //Physics engine
         const Ammo = await ammo()
-        // scene.enablePhysics(new Vector3(0,-9.81,0),new AmmoJSPlugin(true, Ammo));
-        scene.enablePhysics(null, new AmmoJSPlugin());
+        scene.enablePhysics(new Vector3(0,-9.81,0),new AmmoJSPlugin(true, Ammo));
+        // scene.enablePhysics(null, new AmmoJSPlugin(true));
+        scene.getPhysicsEngine().setTimeStep(1 / 60)
+         scene.getPhysicsEngine().setSubTimeStep(1);
+
     }
 
     async setUpGame(scene,canvas){

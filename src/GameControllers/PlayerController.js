@@ -110,62 +110,40 @@ class PlayerController extends GameObject{
     updateFromControl(){
         this.deltaTime = this.scene.getEngine().getDeltaTime() / 1000.0;
 
-        this.player.mesh.frontVector = new Vector3(0,0,1)
         this.horizontal = this.input.horizontalAxis;
         this.vertical = this.input.verticalAxis;
         this.eulerRotation = this.player.mesh.rotationQuaternion.toEulerAngles()
+        this.player.mesh.frontVector = new Vector3(Math.sin(this.eulerRotation.y),0,Math.cos(this.eulerRotation.y));
 
-        //right
         if(this.horizontal > 0){
-            this.player.mesh.frontVector = new Vector3(Math.sin(this.eulerRotation.y),0,Math.cos(this.eulerRotation.y));
-            var axis2 = new Vector3(0, -1, 0);
-            this.angle -= 0.05;
-            this.player.mesh.rotationQuaternion= Quaternion.RotationAxis(axis2, this.angle);
+             let axis2 = new Vector3(0, 1, 0);
+             this.eulerRotation.y += 0.05;
+              this.player.mesh.rotationQuaternion= Quaternion.FromEulerAngles(0,this.eulerRotation.y,0);
         }
         //left
         if(this.horizontal < 0){
-            // this.player.mesh.physicsImpostor.setAngularVelocity(new Vector3(0, -2 , 0));
-            this.player.mesh.frontVector = new Vector3(Math.sin(this.eulerRotation.y),0,Math.cos(this.eulerRotation.y));
-            var axis = new Vector3(0, -1, 0);
-            this.angle += 0.02;
-            this.player.mesh.rotationQuaternion= Quaternion.RotationAxis(axis, this.angle);
+            this.eulerRotation.y -= 0.05;
+            this.player.mesh.rotationQuaternion= Quaternion.FromEulerAngles(0,this.eulerRotation.y,0);
         }
         //up
         if(this.vertical > 0){
-            this.player.mesh.frontVector = new Vector3(Math.sin(this.eulerRotation.y),0,Math.cos(this.eulerRotation.y));
-            this.player.mesh.frwVectore = this.getForwardVector(this.player.mesh);
-            // let velocity = this.player.mesh.physicsImpostor.getLinearVelocity();
-            // console.log(velocity)
-            // if (Math.abs(velocity.length()) < PlayerController.MAX_SPEED) {
-                // this.player.mesh.physicsImpostor.setLinearVelocity(velocity.add(this.player.mesh.frontVector.multiplyByFloats(PlayerController.PLAYER_SPEED,PlayerController.PLAYER_SPEED,PlayerController.PLAYER_SPEED)));
-            // }
+           // let velocity = this.player.mesh.physicsImpostor.getLinearVelocity();
             this.player.mesh.moveWithCollisions(this.player.mesh.frontVector.multiplyByFloats(PlayerController.PLAYER_SPEED,PlayerController.PLAYER_SPEED,PlayerController.PLAYER_SPEED));
+           // this.player.mesh.physicsImpostor.setLinearVelocity(velocity.add(this.player.mesh.frontVector.multiplyByFloats(PlayerController.PLAYER_SPEED,PlayerController.PLAYER_SPEED,PlayerController.PLAYER_SPEED)));
         }
         // //down
         if(this.vertical < 0){
-            this.player.mesh.frontVector = new Vector3(Math.sin(this.eulerRotation.y),0,Math.cos(this.eulerRotation.y));
             this.player.mesh.moveWithCollisions(this.player.mesh.frontVector.multiplyByFloats(-PlayerController.PLAYER_SPEED,PlayerController.PLAYER_SPEED,-PlayerController.PLAYER_SPEED));
         }
-
-        // if(this.vertical === 0){
-            // this.player.mesh.physicsImpostor.setLinearVelocity(Vector3.Zero())
-            // this.player.mesh.physicsImpostor.setAngularVelocity(Vector3.Zero())
-        // }
-
+        if(this.vertical === 0){
+            // this.player.mesh.physicsImpostor.setLinearVelocity(Vector3.Zero());
+            // this.player.mesh.physicsImpostor.setAngularVelocity(Vector3.Zero());
+        }
     }
-
-    getForwardVector(mesh) {
-        mesh.computeWorldMatrix(true);
-        this.forward_local = new Vector3(0, 0, 1);
-        this.worldMatrix = mesh.getWorldMatrix();
-        return Vector3.TransformNormal(this.forward_local, this.worldMatrix);
-    }
-
 
     //Check ground with ray
-
     floorRayCast(offsetx, offsetz, raycastlen){
-        let raycastFloorPos = new Vector3(this.player.mesh.position.x + offsetx, this.player.mesh.position.y + 0.5 , this.player.mesh.position.z + offsetz);
+        let raycastFloorPos = new Vector3(this.player.mesh.position.x + offsetx, this.player.mesh.position.y  + 0.5 , this.player.mesh.position.z + offsetz);
         this.ray = new Ray(raycastFloorPos, Vector3.Up().scale(-1), raycastlen);
         let predicate = function (mesh) {
             return mesh.isPickable && mesh.isEnabled();
@@ -176,39 +154,64 @@ class PlayerController extends GameObject{
         } else {
             return Vector3.Zero();
         }
-
     }
 
-
     isGrounded(){
-        if(this.floorRayCast(0,0,0.8).equals(Vector3.Zero())){
-            return false
+        if(this.floorRayCast(0,0,0.6).equals(Vector3.Zero())){
+            return false;
         }else{
             return true;
         }
     }
 
+    // checkSlope() {
+    //     //only check meshes that are pickable and enabled (specific for collision meshes that are invisible)
+    //     let predicate = function (mesh) {
+    //         return mesh.isPickable && mesh.isEnabled();
+    //     }
+    //
+    //     //4 raycasts outward from center
+    //     let raycast = new Vector3(this.player.mesh.position.x, this.player.mesh.position.y , this.player.mesh.position.z );
+    //     let ray = new Ray(raycast, Vector3.Up().scale(-1), 1);
+    //     let pick = this.scene.pickWithRay(ray, predicate);
+    //
+    //     // const rayHelper = new RayHelper(ray);
+    //     // rayHelper.attachToMesh(this.player.mesh, new Vector3(0,this.player.mesh.position.y,0), new Vector3(0, -1, 0), 1.5);
+    //     // rayHelper.show(this.scene, Color3.Red());
+    //
+    //     if (pick.hit && !pick.getNormal().equals(Vector3.Up())) {
+    //         if(pick.pickedMesh.name.includes("stair")) {
+    //             return true;
+    //         }
+    //     }
+    //     return false;
+    // }
+
     updateGroundDetection(){
+
         if(!this.isGrounded()){
-            this.gravity = this.gravity.addInPlace(Vector3.Up().scale(this.deltaTime * PlayerController.GRAVITY));
-            this.grounded = false;
+           // console.log("not groun")
+            // if(this.checkSlope() && this.gravity.y <= 0){
+                // console.log("slope")
+            // }
+            // else{
+                this.gravity = this.gravity.addInPlace(Vector3.Up().scale(this.deltaTime * PlayerController.GRAVITY));
+                this.grounded = false;
+            // }
         }
 
         if (this.gravity.y < -PlayerController.JUMP_FORCE) {
-            this.gravity.y = -PlayerController.JUMP_FORCE;
+            // this.gravity.y = -PlayerController.JUMP_FORCE;
         }
 
         // if (this.gravity.y < 0 && this.isJumping) { //todo: play a falling anim if not grounded BUT not on a slope
         //     this.isFalling = true;
         // }
-
-          // this.player.mesh.moveWithCollisions(this.moveDirection.addInPlace(this.gravity));
-          // this.player.body.onAnimationEnd = ()=>{
-              this.player.mesh.moveWithCollisions(Vector3.Zero().addInPlace(this.gravity));
+        //       this.player.mesh.moveWithCollisions(new Vector3(0,0,0).addInPlace(this.gravity));
           // }
 
         //
-        if (this.isGrounded()) {
+        if(this.isGrounded()) {
             this.gravity.y = 0;
             this.lastGroundPos.copyFrom(this.player.mesh.position);
             this.grounded = true;
@@ -219,26 +222,27 @@ class PlayerController extends GameObject{
 
         //Jump detection
         if(this.input.jumpKeyDown && this.jumpCount > 0) {
-            this.gravity.y = PlayerController.JUMP_FORCE;
+            this.player.mesh.physicsImpostor.applyImpulse(new Vector3(0,15,0),this.player.mesh.getAbsolutePosition())
+            // this.gravity.y = PlayerController.JUMP_FORCE;
             this.jumpCount--;
             this.isJumping = true;
         }
     }
 
     playerCollision(){
+        // this.player.mesh.onCollide=(m)=>{
+        //     if(m.name.includes("act") && this.isGrounded()){
+        //         console.log("collide")
+        //          // m.parent.physicsImpostor.applyImpulse(new Vector3(this.player.mesh.frontVector.x,0, this.player.mesh.frontVector.z), m.parent.getAbsolutePosition())
+        //         m.parent.physicsImpostor.applyForce(new Vector3(this.player.mesh.frontVector.x,0, this.player.mesh.frontVector.z) .scale(20), m.parent.getAbsolutePosition().add(Vector3.Zero()))
+        //     }
+        // }
 
-        // this.obstacle = this.scene.getMeshByName("obstacle")
-        // this.obstacle.moveWithCollisions(Vector3.Zero())
-        this.player.mesh.onCollide=(m)=>{
-            if(m.name.includes("act")){
-                console.log(m.parent)
-                m.parent.physicsImpostor.applyImpulse(this.player.mesh.frontVector.scale(5), m.parent.getAbsolutePosition())
-                // console.log(m.getAbsolutePosition().add(this.player.mesh.position));
-                // console.log(this.player.mesh.frontVector.scale(100));
-        //         // m.physicsImpostor.applyImpulse(this.player.mesh.frontVector, m.getAbsolutePosition().add(this.player.mesh.position))
-        //         m.physicsImpostor.applyForce(this.player.mesh.frontVector.scale(5000000), m.getAbsolutePosition().add(this.player.mesh.frontVector))
-            }
-        }
+        // if(this.player.mesh.intersectsMesh(this.scene.getMeshByName("stair"))){
+        //     this.isOnStairs = true;
+        // }else{
+        //     this.isOnStairs = false;
+        // }
     }
 
 
