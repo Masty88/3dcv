@@ -53,7 +53,8 @@ class InputController extends GameObject{
         if (this.inputMap[" "]) {
             this.jumpKeyDown = true;
             console.log("jump")
-        } else {
+        }
+        else {
             this.jumpKeyDown = false;
         }
     }

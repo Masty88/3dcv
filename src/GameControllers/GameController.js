@@ -15,6 +15,7 @@ import "@babylonjs/inspector";
 import PlayerController from "@/GameControllers/PlayerController";
 import InputController from "@/GameControllers/InputController";
 import PlayerLoader from "@/GameControllers/PlayerLoader";
+import PhysicWorldController from "@/GameControllers/PhysicWorldController";
 
 class GameController{
 
@@ -40,7 +41,7 @@ class GameController{
         const worldMax = this.Ammo.btVector3(1000,1000,1000);
         scene.enablePhysics(new Vector3(0,-9.81,0),new AmmoJSPlugin(true, this.Ammo));
         scene.getPhysicsEngine().setTimeStep(1 / 60)
-        scene.getPhysicsEngine().setSubTimeStep(1);
+        scene.getPhysicsEngine().setSubTimeStep(3);
         // scene.getPhysicsEngine().getPhysicsPlugin().setFixedTimeStep(1/300);
     }
 
@@ -51,9 +52,11 @@ class GameController{
         new HemisphericLight("light", Vector3.Up(), scene);
 
         this.environnemet= new EnvironnementController(this.Ammo);
-        this.environnemet.load();
+        await this.environnemet.load();
 
-        this.playerAsset= new PlayerLoader(this.Ammo)
+        this.physicWorld = new PhysicWorldController();
+
+         this.playerAsset= new PlayerLoader(this.Ammo)
         await this.playerAsset.loadPlayer()
 
         this.input= new InputController();

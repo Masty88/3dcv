@@ -46,7 +46,7 @@ class PlayerLoader extends GameObject{
 
         this.controllerK.setGravity(10);
         this.controllerK.canJump();
-        this.controllerK.setMaxJumpHeight(1.3);
+        this.controllerK.setMaxJumpHeight(8);
         this.controllerK.setJumpSpeed(8);
         this.controllerK.setUpInterpolate(true);
 

@@ -18,7 +18,8 @@ export default {
 body{
   width: 100%;
   height: 100vh;
-  /*overflow-y: hidden;*/
+  max-height: 100vh;
+  overflow-y: hidden;
 }
 *{
   margin: 0;

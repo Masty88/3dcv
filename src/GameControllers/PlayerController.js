@@ -1,5 +1,6 @@
 import GameObject from "@/GameControllers/GameObject";
 import {
+    AnimationEvent,
     ArcFollowCamera,
     ArcRotateCamera, BaseCameraPointersInput,
     Color3,
@@ -16,7 +17,7 @@ import {
 } from "@babylonjs/core";
 
 class PlayerController extends GameObject{
-    static PLAYER_SPEED= 0.03;
+    static PLAYER_SPEED= 0.01;
     static MAX_SPEED= 10;
     static JUMP_FORCE = 0.8;
     static CAMERA_SPEED = 10 ;
@@ -69,31 +70,35 @@ class PlayerController extends GameObject{
     }
 
     animatePlayer(){
-        if(this.input.inputMap["ArrowUp"] || this.input.inputMap["W"] || this.input.inputMap["w"]){
-            this.currentAnimation= this.walk_frw;
-            this.isAnimating= true}
+        if(this.input.jumpKeyDown === false){
+            if(this.input.inputMap["ArrowUp"] || this.input.inputMap["W"] || this.input.inputMap["w"] ){
+                this.currentAnimation= this.walk_frw;
+                this.isAnimating= true}
 
-        else if(this.input.inputMap["ArrowDown"] || this.input.inputMap["W"] || this.input.inputMap["w"]){
-            this.currentAnimation= this.walk_back;
-            this.isAnimating= true}
+            else if(this.input.inputMap["ArrowDown"] || this.input.inputMap["W"] || this.input.inputMap["w"]){
+                this.currentAnimation= this.walk_back;
+                this.isAnimating= true}
 
-        else if(this.input.inputMap["ArrowLeft"] || this.input.inputMap["W"] || this.input.inputMap["w"]){
-            this.currentAnimation= this.walk_left;
-            this.isAnimating= true}
+            else if(this.input.inputMap["ArrowLeft"] || this.input.inputMap["W"] || this.input.inputMap["w"]){
+                this.currentAnimation= this.walk_left;
+                this.isAnimating= true}
 
-        else if(this.input.inputMap["ArrowRight"] || this.input.inputMap["W"] || this.input.inputMap["w"]){
-            this.currentAnimation= this.walk_right;
-            this.isAnimating= true}
-
-
-        else if(this.input.vertical === 0 ){
-            this.currentAnimation= this.idle;
-            this.isIdle=true
-            this.isAnimating= false;
+            else if(this.input.inputMap["ArrowRight"] || this.input.inputMap["W"] || this.input.inputMap["w"]){
+                this.currentAnimation= this.walk_right;
+                this.isAnimating= true
+            }
+            else if(this.input.vertical === 0 ){
+                this.currentAnimation= this.idle;
+                this.isIdle=true
+                this.isAnimating= false;
+            }
         }
 
-        if(this.jumpKeyDown){
+        if(this.input.jumpKeyDown || this.isJumping){
             this.currentAnimation= this.jump;
+            // this.jump.onAnimationEndObservable.add(()=>{
+                // console.log("end")
+            // })
         }
 
         if(this.currentAnimation != null && this.prevAnimation !== this.currentAnimation) {
@@ -112,10 +117,9 @@ class PlayerController extends GameObject{
 
     updateFromControl(){
         let contacts = this.player.ghostObject.getNumOverlappingObjects();
-        this.player.controllerK.onGround=()=>{console.log(" ground")}
-        // console.log(contacts)
-        if (this.input.vertical >0) {
-               const forward = this.xform.getBasis().getRow(2);
+        this.player.controllerK.onGround(()=>{console.log("ground")})
+            if (this.input.vertical >0) {
+                const forward = this.xform.getBasis().getRow(2);
                 this.walkDirection = new this.Ammo.btVector3(
                     forward.x(),
                     forward.y(),
@@ -135,15 +139,24 @@ class PlayerController extends GameObject{
                 const q = this.getQuartenionFromAxisAngle([0, 1, 0], this.angle);
                 this.player.ghostObject.getWorldTransform().setRotation(q)
             }
-        if(this.input.horizontal < 0){
-            this.angle += 0.02;
-            const q = this.getQuartenionFromAxisAngle([0, 1, 0], this.angle);
-            this.player.ghostObject.getWorldTransform().setRotation(q)
-        }
-            if (this.input.jumpKeyDown) {
-                this.player.controllerK.jump();
+            if(this.input.horizontal < 0){
+                this.angle += 0.02;
+                const q = this.getQuartenionFromAxisAngle([0, 1, 0], this.angle);
+                this.player.ghostObject.getWorldTransform().setRotation(q)
             }
-            if (this.input.vertical === 0) {
+
+            if (this.input.jumpKeyDown) {
+                let event = new AnimationEvent(28.73,()=>{
+                    this.player.controllerK.jump(),
+                    true
+                })
+                console.log(this.jump.targetedAnimations[0].animation)
+                this.jump.targetedAnimations[0].animation.addEvent(event)
+                // this.currentAnimation.goToFrame(28.730)
+                // console.log(this.currentAnimation)
+
+            }
+            if ((this.input.vertical === 0) || this.input.jumpKeyDown) {
                 this.walkDirection = new this.Ammo.btVector3(0, 0, 0);
             }
             this.player.controllerK.setWalkDirection(this.walkDirection);
@@ -174,6 +187,11 @@ class PlayerController extends GameObject{
     beforeRenderUpdate(){
         this.animatePlayer();
         this.updateFromControl();
+        if(this.player.body.position.y > 0.5){
+            this.isJumping = true;
+        }else{
+            this.isJumping = false
+        }
         //this.updateGroundDetection();
     }
     //
