@@ -17,7 +17,7 @@ import {
 } from "@babylonjs/core";
 
 class PlayerController extends GameObject{
-    static PLAYER_SPEED= 0.01;
+    static PLAYER_SPEED= 0.005;
     static MAX_SPEED= 10;
     static JUMP_FORCE = 0.8;
     static CAMERA_SPEED = 10 ;
@@ -96,6 +96,11 @@ class PlayerController extends GameObject{
 
         if(this.input.jumpKeyDown || this.isJumping){
             this.currentAnimation= this.jump;
+            let event = new AnimationEvent(28.73,()=>{
+                this.player.controllerK.jump();
+            }, false)
+            console.log(this.jump.targetedAnimations[0].animation)
+            this.jump.targetedAnimations[0].animation.addEvent(event)
             // this.jump.onAnimationEndObservable.add(()=>{
                 // console.log("end")
             // })
@@ -112,12 +117,11 @@ class PlayerController extends GameObject{
     getPhysic(){
         this.xform = this.player.ghostObject.getWorldTransform();
         this.walkDirection = new this.Ammo.btVector3(0.0, 0.0, 0.0);
-        this.angle = 0.01
+        this.angle = 4.9
     }
 
     updateFromControl(){
-        let contacts = this.player.ghostObject.getNumOverlappingObjects();
-        this.player.controllerK.onGround(()=>{console.log("ground")})
+
             if (this.input.vertical >0) {
                 const forward = this.xform.getBasis().getRow(2);
                 this.walkDirection = new this.Ammo.btVector3(
@@ -135,28 +139,17 @@ class PlayerController extends GameObject{
                 ).op_mul(PlayerController.PLAYER_SPEED);
             }
             if(this.input.horizontal >0){
-                this.angle -= 0.02;
+                this.angle -= 0.04;
                 const q = this.getQuartenionFromAxisAngle([0, 1, 0], this.angle);
                 this.player.ghostObject.getWorldTransform().setRotation(q)
             }
             if(this.input.horizontal < 0){
-                this.angle += 0.02;
+                this.angle += 0.04;
                 const q = this.getQuartenionFromAxisAngle([0, 1, 0], this.angle);
                 this.player.ghostObject.getWorldTransform().setRotation(q)
             }
 
-            if (this.input.jumpKeyDown) {
-                let event = new AnimationEvent(28.73,()=>{
-                    this.player.controllerK.jump(),
-                    true
-                })
-                console.log(this.jump.targetedAnimations[0].animation)
-                this.jump.targetedAnimations[0].animation.addEvent(event)
-                // this.currentAnimation.goToFrame(28.730)
-                // console.log(this.currentAnimation)
-
-            }
-            if ((this.input.vertical === 0) || this.input.jumpKeyDown) {
+            if ((this.input.vertical === 0) || this.input.jumpKeyDown  ) {
                 this.walkDirection = new this.Ammo.btVector3(0, 0, 0);
             }
             this.player.controllerK.setWalkDirection(this.walkDirection);
@@ -180,19 +173,47 @@ class PlayerController extends GameObject{
         this.halfAngle = angle * 0.5 ;
         let s = Math.sin(this.halfAngle);
         this.q.setValue(Math.cos(this.halfAngle), axis[0] * s, axis[1] * s, axis[2] * s);
+        console.log(axis[2])
         return this.q;
+    }
+
+    //Check ground with ray
+    floorRayCast(offsetx, offsetz, raycastlen){
+        let raycastFloorPos = new Vector3(this.player.body.position.x + offsetx, this.player.body.position.y  + 0.5 , this.player.body.position.z + offsetz);
+        this.ray = new Ray(raycastFloorPos, Vector3.Up().scale(-1), raycastlen);
+        let predicate = function (mesh) {
+            return mesh.isPickable && mesh.isEnabled();
+        }
+        let pick = this.scene.pickWithRay(this.ray, predicate);
+        if (pick.hit) {
+            return pick.pickedPoint;
+        } else {
+            return Vector3.Zero();
+        }
+    }
+
+    isGrounded(){
+        if(this.floorRayCast(0,0,0.6).equals(Vector3.Zero())){
+            return false;
+        }else{
+            return true;
+        }
+    }
+
+    updateGroundDetection(){
+        if(!this.isGrounded()){
+            console.log("not")
+            this.isJumping = true;
+        }else{
+            this.isJumping = false
+        }
     }
 
 
     beforeRenderUpdate(){
         this.animatePlayer();
         this.updateFromControl();
-        if(this.player.body.position.y > 0.5){
-            this.isJumping = true;
-        }else{
-            this.isJumping = false
-        }
-        //this.updateGroundDetection();
+        this.updateGroundDetection();
     }
     //
     activatePlayerCamera(){
@@ -205,8 +226,8 @@ class PlayerController extends GameObject{
     setupPlayerCamera(){
 
         // Follow camera
-        this.camera = new FollowCamera("third_person",new Vector3(10,0,8), this.scene);
-        this.camera.heightOffset= 7;
+        this.camera = new FollowCamera("third_person",new Vector3(-50,0,8), this.scene);
+        this.camera.heightOffset= 2;
         this.camera.rotationOffset = 180;
         this.camera.cameraAcceleration = .1;
         this.camera.maxCameraSpeed = 1;

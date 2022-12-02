@@ -16,6 +16,7 @@ import PlayerController from "@/GameControllers/PlayerController";
 import InputController from "@/GameControllers/InputController";
 import PlayerLoader from "@/GameControllers/PlayerLoader";
 import PhysicWorldController from "@/GameControllers/PhysicWorldController";
+import MaterialController from "@/GameControllers/MaterialController";
 
 class GameController{
 
@@ -41,7 +42,7 @@ class GameController{
         const worldMax = this.Ammo.btVector3(1000,1000,1000);
         scene.enablePhysics(new Vector3(0,-9.81,0),new AmmoJSPlugin(true, this.Ammo));
         scene.getPhysicsEngine().setTimeStep(1 / 60)
-        scene.getPhysicsEngine().setSubTimeStep(3);
+        scene.getPhysicsEngine().setSubTimeStep(1);
         // scene.getPhysicsEngine().getPhysicsPlugin().setFixedTimeStep(1/300);
     }
 
@@ -55,8 +56,12 @@ class GameController{
         await this.environnemet.load();
 
         this.physicWorld = new PhysicWorldController();
+        await this.physicWorld.objectController()
+        this.physicWorld.updateImpostor()
 
-         this.playerAsset= new PlayerLoader(this.Ammo)
+        this.effectLayer = new MaterialController();
+
+        this.playerAsset= new PlayerLoader(this.Ammo)
         await this.playerAsset.loadPlayer()
 
         this.input= new InputController();

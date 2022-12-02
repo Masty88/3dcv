@@ -19,6 +19,7 @@ class PlayerLoader extends GameObject{
         this.Ammo = ammo
         this.kinematicController();
     }
+
      kinematicController(){
 
        //this.shape =  new this.Ammo.btBoxShape(new this.Ammo.btVector3(1, 0.1, 2));
@@ -28,8 +29,8 @@ class PlayerLoader extends GameObject{
 
         const transform = new this.Ammo.btTransform();
         transform.setIdentity();
-        transform.setOrigin(new this.Ammo.btVector3(0, 1, 0));
-        transform.setRotation(new this.Ammo.btQuaternion(-1,0, 0 ,0))
+        transform.setOrigin(new this.Ammo.btVector3(-50, 1, 0));
+        transform.setRotation(new this.Ammo.btQuaternion(1,0, -1 ,0))
 
         this.ghostObject.setWorldTransform(transform);
         this.ghostObject.setCollisionShape(this.shape);
@@ -50,7 +51,6 @@ class PlayerLoader extends GameObject{
         this.controllerK.setJumpSpeed(8);
         this.controllerK.setUpInterpolate(true);
 
-
         const world = this.scene.getPhysicsEngine().getPhysicsPlugin().world;
         world.addCollisionObject(this.ghostObject, 32, -1);
         world.addAction(this.controllerK);
@@ -62,7 +62,8 @@ class PlayerLoader extends GameObject{
             const result= await SceneLoader.ImportMeshAsync(null,"/assets/","cat.glb", this.scene)
             const root = result.meshes[0];
             root.scaling = new Vector3(3,3,-3)
-
+            // root.position = new Vector3(-12.76, 0.11,2.85)
+            // root.rotationQuaternion = new Quaternion(1,0,0,0)
 
             this.body = root;
             this.body.isPickable = false;
