@@ -1,14 +1,36 @@
 <template>
-  <BabylonScene/>
+  <div v-if="game === 'game'">
+    <GameScene/>
+  </div>
+  <div v-else>
+    <p>intro</p>
+    <button @click = "changeScene" >goTogame</button>
+  </div>
 </template>
 
 <script>
-import BabylonScene from "@/components/BabylonScene";
+import GameScene from "@/components/GameScene";
+// import IntroScene from "@/components/IntroScene";
+
+import {mapState} from "vuex";
+import store from "@/store";
 
 export default {
   name: 'App',
   components: {
-    BabylonScene,
+    GameScene,
+    // IntroScene
+  },
+  computed: mapState({
+    game: state => state.game
+  }),
+  methods:{
+    changeScene(){
+      store.commit('changeScene', {
+        scene: 'game'
+      })
+      console.log(store)
+    }
   }
 }
 </script>

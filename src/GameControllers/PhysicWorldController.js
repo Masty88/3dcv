@@ -25,7 +25,7 @@ class PhysicWorldController extends GameObject{
                 console.log(mesh.name)
                 mesh.isVisible = false;
                 mesh.setParent(null);
-                mesh.physicsImpostor = new PhysicsImpostor(mesh,PhysicsImpostor.BoxImpostor,{mass:1, friction:10});
+                mesh.physicsImpostor = new PhysicsImpostor(mesh,PhysicsImpostor.BoxImpostor,{mass:10, friction:10});
             }
             if(mesh.name.includes("portal")){
                 mesh.setParent(this.leftDoor);
