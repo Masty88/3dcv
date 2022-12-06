@@ -17,7 +17,7 @@ import {
 } from "@babylonjs/core";
 
 class PlayerController extends GameObject{
-    static PLAYER_SPEED= 0.005;
+    static PLAYER_SPEED= 0.03;
     static MAX_SPEED= 10;
     static JUMP_FORCE = 0.8;
     static CAMERA_SPEED = 10 ;
@@ -173,7 +173,6 @@ class PlayerController extends GameObject{
         this.halfAngle = angle * 0.5 ;
         let s = Math.sin(this.halfAngle);
         this.q.setValue(Math.cos(this.halfAngle), axis[0] * s, axis[1] * s, axis[2] * s);
-        console.log(axis[2])
         return this.q;
     }
 

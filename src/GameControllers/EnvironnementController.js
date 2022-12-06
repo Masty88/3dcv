@@ -39,15 +39,20 @@ class EnvironnementController extends GameObject{
           let groundMat= new StandardMaterial("groundMat", this.scene);
           groundMat.diffuseColor = Color3.FromHexString("836363FF");
           ground.material = groundMat;
-          ground.physicsImpostor = new PhysicsImpostor(ground, PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0, friction:0.1}, this.scene);
+          ground.physicsImpostor = new PhysicsImpostor(ground, PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0, friction:0.7}, this.scene);
           ground.isVisible = false;
+          ground.position = new Vector3(0,-0.45,0);
 
           const city=  await this.loadAssets();
           city.result.meshes.forEach((mesh)=>{
               if(mesh.name.includes("impostor") && mesh.name.includes("cube")){
                   mesh.setParent(null)
                   mesh.isVisible = false;
-                  mesh.physicsImpostor = new PhysicsImpostor(mesh, PhysicsImpostor.BoxImpostor,{mass: 0,restitution:0.1,friction:0})
+                  mesh.physicsImpostor = new PhysicsImpostor(mesh, PhysicsImpostor.BoxImpostor,{mass: 0,restitution:0.1,friction:0.7})
+              }
+              if(mesh.name === "Zone1" || mesh.name === "Zone2"){
+                  mesh.setParent(null);
+                  mesh.isVisible = false;
               }
           })
 

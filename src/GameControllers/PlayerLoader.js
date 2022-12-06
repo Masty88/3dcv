@@ -66,6 +66,7 @@ class PlayerLoader extends GameObject{
             // root.rotationQuaternion = new Quaternion(1,0,0,0)
 
             this.body = root;
+            this.body.name = "Cat";
             this.body.isPickable = false;
 
 

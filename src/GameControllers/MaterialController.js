@@ -33,10 +33,8 @@ class MaterialController extends GameObject{
 
     setMeshToGlow(){
         this.glowingMesh = this.scene.meshes.forEach((mesh)=>{
-            console.log(mesh.name)
             if(mesh.name.includes("glowing")){
                 mesh.material = this.glowText;
-                console.log(mesh.material)
             }
         })
     }

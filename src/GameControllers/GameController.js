@@ -5,7 +5,7 @@ import {
     MeshBuilder,
     StandardMaterial,
     Color3,
-    ArcRotateCamera, AmmoJSPlugin, PhysicsImpostor, Quaternion
+    ArcRotateCamera, AmmoJSPlugin, PhysicsImpostor, Quaternion, Scene, SceneOptimizer
 } from "@babylonjs/core"
 import * as ammo  from 'ammo.js';
 import GameObject from "@/GameControllers/GameObject";
@@ -17,6 +17,7 @@ import InputController from "@/GameControllers/InputController";
 import PlayerLoader from "@/GameControllers/PlayerLoader";
 import PhysicWorldController from "@/GameControllers/PhysicWorldController";
 import MaterialController from "@/GameControllers/MaterialController";
+import SceneOptimization from "@/GameControllers/SceneOptimizer";
 
 class GameController{
 
@@ -42,7 +43,7 @@ class GameController{
         const worldMax = this.Ammo.btVector3(1000,1000,1000);
         scene.enablePhysics(new Vector3(0,-9.81,0),new AmmoJSPlugin(true, this.Ammo));
         scene.getPhysicsEngine().setTimeStep(1 / 60)
-        scene.getPhysicsEngine().setSubTimeStep(1);
+        scene.getPhysicsEngine().setSubTimeStep(3);
         // scene.getPhysicsEngine().getPhysicsPlugin().setFixedTimeStep(1/300);
     }
 
@@ -55,18 +56,19 @@ class GameController{
         this.environnemet= new EnvironnementController(this.Ammo);
         await this.environnemet.load();
 
-        this.physicWorld = new PhysicWorldController();
-        await this.physicWorld.objectController()
-        this.physicWorld.updateImpostor()
-
-        this.effectLayer = new MaterialController();
 
         this.playerAsset= new PlayerLoader(this.Ammo)
         await this.playerAsset.loadPlayer()
 
+        this.physicWorld = new PhysicWorldController(this.playerAsset);
+        await this.physicWorld.objectController()
+
         this.input= new InputController();
         this.player= new PlayerController(this.input,this.playerAsset,this.Ammo);
         this.player.activatePlayerCamera();
+
+        this.effectLayer = new MaterialController();
+        this.sceneOptimizer = new SceneOptimization(this.playerAsset)
 
         await scene.debugLayer.show();
 
