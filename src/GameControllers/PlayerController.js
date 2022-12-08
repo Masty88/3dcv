@@ -201,11 +201,16 @@ class PlayerController extends GameObject{
 
     updateGroundDetection(){
         if(!this.isGrounded()){
-            console.log("not")
-            this.isJumping = true;
+            if(this.input.jumpKeyDown){
+                this.isJumping = true;
+            }
         }else{
             this.isJumping = false
         }
+    }
+
+    collisionRayCast(){
+
     }
 
 
@@ -233,6 +238,7 @@ class PlayerController extends GameObject{
         this.camera.lockedTarget = (this.player.body);
         this.scene.activeCamera = this.camera;
         this.camera.attachControl( true)
+        this.camera.maxZ = 10000;
 
         this.camera.inputs.removeByType("FollowCameraKeyboardMoveInput");
         // this.camera.inputs.add(new FollowCameraPointersInput())

@@ -18,6 +18,7 @@ import PlayerLoader from "@/GameControllers/PlayerLoader";
 import PhysicWorldController from "@/GameControllers/PhysicWorldController";
 import MaterialController from "@/GameControllers/MaterialController";
 import SceneOptimization from "@/GameControllers/SceneOptimizer";
+import ParticleController from "@/GameControllers/ParticleController";
 
 class GameController{
 
@@ -35,23 +36,28 @@ class GameController{
 
         const camera = new FreeCamera("camera1", new Vector3(0, 5, -10), scene);
         camera.setTarget(Vector3.Zero());
-        camera.inputs.removeByType("FreeCameraKeyboardMoveInput");
+        // camera.inputs.removeByType("FreeCameraKeyboardMoveInput");
         camera.attachControl(true)
         //Physics engine
         this.Ammo = await ammo()
+        console.log(this.Ammo)
         const worldMin = this.Ammo.btVector3(-1000,-1000,-1000);
         const worldMax = this.Ammo.btVector3(1000,1000,1000);
         scene.enablePhysics(new Vector3(0,-9.81,0),new AmmoJSPlugin(true, this.Ammo));
-        scene.getPhysicsEngine().setTimeStep(1 / 60)
+        // scene.getPhysicsEngine().setTimeStep(1 / 60)
+        // this.Ammo.setMaxSteps(10);
+        // this.Ammo.setFixedTimeStep(1/(240));
         scene.getPhysicsEngine().setSubTimeStep(3);
-        // scene.getPhysicsEngine().getPhysicsPlugin().setFixedTimeStep(1/300);
+        // scene.getPhysicsEngine().setMaxSteps(10);
+        scene.getPhysicsEngine().getPhysicsPlugin().setFixedTimeStep(1/300);
     }
 
     async setUpGame(scene,canvas){
 
         GameObject.Engine.displayLoadingUI()
+        // scene.useRightHandedSystem = true;
 
-        new HemisphericLight("light", Vector3.Up(), scene);
+        this.mainLight = new HemisphericLight("light", Vector3.Up(), scene);
 
         this.environnemet= new EnvironnementController(this.Ammo);
         await this.environnemet.load();
@@ -67,7 +73,8 @@ class GameController{
         this.player= new PlayerController(this.input,this.playerAsset,this.Ammo);
         this.player.activatePlayerCamera();
 
-        this.effectLayer = new MaterialController();
+        this.effectLayer = new MaterialController(this.environnemet, this.physicWorld);
+        this.particles = new ParticleController();
         this.sceneOptimizer = new SceneOptimization(this.playerAsset)
 
         await scene.debugLayer.show();

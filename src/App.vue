@@ -31,6 +31,9 @@ export default {
       })
       console.log(store)
     }
+  },
+  mounted() {
+    console.log(window.performance.memory)
   }
 }
 </script>
@@ -39,7 +42,7 @@ export default {
 
 body{
   width: 100%;
-  height: 100vh;
+  /*height: 100vh;*/
   /*max-height: 100vh;*/
   /*overflow-y: hidden;*/
 }

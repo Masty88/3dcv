@@ -7,7 +7,7 @@ class SceneOptimization extends GameObject{
         this.player = player
         this.scene.getAnimationRatio();
         this.optimization()
-        this.autoLod();
+        // this.autoLod();
         this.updateBeforeLoop()
     }
 
@@ -33,8 +33,8 @@ class SceneOptimization extends GameObject{
             if( mesh.name.includes("Z")){
                 mesh.simplify(
                         [
-                            { quality: 0.8, distance: 100},
-                            { quality: 0.2, distance: 200, },
+                            { quality: 0.9, distance: 100},
+                            { quality: 0.8, distance: 400, },
                         ],
                         false,
                         SimplificationType.QUADRATIC,
@@ -47,6 +47,7 @@ class SceneOptimization extends GameObject{
 
     updateBeforeLoop(){
         this.beforeLoop=()=>{
+           // console.log(window.performance.memory.usedJSHeapSize)
         }
     }
 }

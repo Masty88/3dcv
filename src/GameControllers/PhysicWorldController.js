@@ -1,11 +1,11 @@
 import GameObject from "@/GameControllers/GameObject";
 import {
-    HingeJoint,
+    HingeJoint, Mesh,
     MeshBuilder,
     PhysicsImpostor,
     PhysicsViewer,
-    Quaternion,
-    SceneLoader, TransformNode,
+    Quaternion, SceneLoader,
+    TransformNode,
     Vector3
 } from "@babylonjs/core";
 
@@ -20,29 +20,104 @@ class PhysicWorldController extends GameObject{
 
     async objectController(){
         this.phyAssets = await this.loadAsset()
-        const physicsViewer = new PhysicsViewer()
+        // const physicsRoot = new Mesh("physicsRoot", this.scene);
+
         // this.createJointPortal()
         this.phyAssets.phyObjects.meshes.forEach((mesh)=>{
             if(mesh.name.includes("parent") && mesh.name.includes("cube")){
                 mesh.isVisible = false;
                 mesh.setParent(null);
                 mesh.physicsImpostor = new PhysicsImpostor(mesh,PhysicsImpostor.BoxImpostor,{mass:10, friction:20});
+                if(mesh.name === "box_parent_cube.002_Z1"){
+                    for(let i = 0; i < 6; i++){
+                        this.box = mesh.clone("box_entry")
+                        if(i < 4){
+                            this.box.position = new Vector3(mesh.position.x + (Math.random() * 6), mesh.position.y, mesh.position.z + (Math.random() * 4))
+                            this.box.rotationQuaternion = Quaternion.FromEulerAngles(1 + (Math.random() * 6),0,0 )
+                        }else{
+                            this.box.position = new Vector3(mesh.position.x + 1, mesh.position.y + 4, mesh.position.z + 1)
+                        }
+                    }
+                }
             }
             if(mesh.name.includes("portal")){
                 mesh.setParent(this.leftDoor);
                 mesh.position = new Vector3(-5,-2.2,0)
             }
+            if(mesh.name.includes("parent") && mesh.name.includes("cylinder")){
+                mesh.isVisible = false;
+                mesh.setParent(null);
+                mesh.physicsImpostor = new PhysicsImpostor(mesh,PhysicsImpostor.CylinderImpostor,{mass:10, friction:20});
+            }
+
         })
-        this.updateImpostor()
+
+        // this.createPhysicContainer = this.createPhysicObject(this.phyAssets.containerMeshes.meshes,this.scene,0.2)
+
+        // Import GLTF with colliders
+        this.newMeshes =  this.phyAssets.containerMeshes.meshes
+        this.barrelPhysicsRoot = this.makePhysicsObject(this.newMeshes, this.scene, 0.5);
+
+        this.createBouncingSpheres()
+        //this.updateImpostor()
         // this.leftDoor.position = new Vector3(-39.74,0,5.64)
     }
 
-
     async loadAsset(){
         const phyObjects = await SceneLoader.ImportMeshAsync('',"/assets/","physic_object.glb",this.scene);
+        const containerMeshes = await SceneLoader.ImportMeshAsync("", "/assets/", "hit_box.glb", this.scene);
         return{
-            phyObjects
+            phyObjects,
+            containerMeshes
         }
+    }
+
+    makePhysicsObject (newMeshes, scene, scaling){
+        // Create physics root and position it to be the center of mass for the imported mesh
+        var physicsRoot = new Mesh("physicsRoot", scene);
+        physicsRoot.position.y = 1;
+
+        // For all children labeled box (representing colliders), make them invisible and add them as a child of the root object
+        newMeshes.forEach((m, i)=>{
+            if(m.name.indexOf("box") != -1){
+                m.isVisible = false;
+                physicsRoot.addChild(m);
+            }
+        })
+
+        // Add all root nodes within the loaded gltf to the physics root
+        newMeshes.forEach((m, i)=>{
+            if(m.parent == null){
+                physicsRoot.addChild(m);
+            }
+        })
+
+        // Make every collider into a physics impostor
+        physicsRoot.getChildMeshes().forEach((m)=>{
+            if(m.name.indexOf("box") != -1){
+                m.scaling.x = Math.abs(m.scaling.x);
+                m.scaling.y = Math.abs(m.scaling.y);
+                m.scaling.z = Math.abs(m.scaling.z);
+                m.physicsImpostor = new PhysicsImpostor(m, PhysicsImpostor.BoxImpostor, { mass: 1, friction: 0.7 }, scene);
+            }
+        })
+
+        // Scale the root object and turn it into a physics impsotor
+        physicsRoot.scaling.scaleInPlace(scaling);
+        physicsRoot.physicsImpostor = new PhysicsImpostor(physicsRoot, PhysicsImpostor.NoImpostor, { mass: 3 }, scene);
+
+        return physicsRoot;
+    }
+
+    createBouncingSpheres(){
+        for(let i = 0; i <3;i++){
+            this.bounceSphere = MeshBuilder.CreateSphere("bounce",{diameter:0.2}, this.scene);
+            // this.bounceSphere.setParent(this.scene.getTransformNodeByName("bouncig_position"))
+            this.bounceSphere.physicsImpostor = new PhysicsImpostor(this.bounceSphere, PhysicsImpostor.SphereImpostor,{ignoreParent: true, mass:1,restitution:0.7,friction:0.1})
+            this.bounceSphere.position = this.scene.getTransformNodeByName("bouncig_position").position;
+        }
+      // return this.bounceSphere
+
     }
 
     createJointPortal(){
@@ -97,7 +172,14 @@ class PhysicWorldController extends GameObject{
         if(this.Z0){
             console.log("you are in Z0")
             console.log(this.Z0)
+            this.scene.skeletons.forEach((skel)=>{
+                skel.prepare()
+            })
             this.scene.meshes.forEach((mesh)=>{
+                mesh.alwaysSelectAsActiveMesh = true
+                this.scene.freezeActiveMeshes(null,
+                    ()=>{console.log("succes")},
+                    (err)=>{console.log(err)})
                 if(mesh.physicsImpostor){
                     mesh.physicsImpostor.sleep()
                 }
@@ -108,8 +190,7 @@ class PhysicWorldController extends GameObject{
             this.scene.meshes.forEach((mesh)=>{
                 if(mesh.physicsImpostor && mesh.name.includes("Z1")){
                     mesh.physicsImpostor.wakeUp()
-                    // mesh.physicsImpostor.setMass(0.1);
-                    // mesh.physicsImpostor.friction = 10;
+                    this.scene.unfreezeActiveMeshes()
                 }
             })
         }
