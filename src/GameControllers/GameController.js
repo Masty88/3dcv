@@ -40,7 +40,6 @@ class GameController{
         camera.attachControl(true)
         //Physics engine
         this.Ammo = await ammo()
-        console.log(this.Ammo)
         const worldMin = this.Ammo.btVector3(-1000,-1000,-1000);
         const worldMax = this.Ammo.btVector3(1000,1000,1000);
         scene.enablePhysics(new Vector3(0,-9.81,0),new AmmoJSPlugin(true, this.Ammo));
@@ -77,7 +76,7 @@ class GameController{
         this.particles = new ParticleController();
         this.sceneOptimizer = new SceneOptimization(this.playerAsset)
 
-        await scene.debugLayer.show();
+        // await scene.debugLayer.show();
 
         GameObject.Engine.hideLoadingUI()
 

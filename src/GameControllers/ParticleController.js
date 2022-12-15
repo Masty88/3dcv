@@ -13,7 +13,6 @@ class ParticleController extends gameObject{
     }
 
     createParticleSystem(name){
-        console.log(this.scene.getTransformNodeByName("particle_position"))
         // Create a particle system
         const particleSystem = new ParticleSystem("particles", 8000, this.scene);
 

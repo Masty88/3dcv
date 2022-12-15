@@ -4,17 +4,19 @@ import {
     MeshBuilder,
     PhysicsImpostor,
     PhysicsViewer,
-    Quaternion, SceneLoader,
+    Quaternion, SceneLoader, StandardMaterial, Texture,
     TransformNode,
     Vector3
 } from "@babylonjs/core";
+import {clear} from "core-js/internals/task";
 
 class PhysicWorldController extends GameObject{
     constructor(player) {
         super();
         this.Z0 = true;
-        this.player = player
-        // this.getPlayerZone()
+        this.player = player;
+        this.bouncingBalls =[]
+        // this.getPlayerZone();
     }
 
 
@@ -31,12 +33,13 @@ class PhysicWorldController extends GameObject{
                 if(mesh.name === "box_parent_cube.002_Z1"){
                     for(let i = 0; i < 6; i++){
                         this.box = mesh.clone("box_entry")
-                        if(i < 4){
-                            this.box.position = new Vector3(mesh.position.x + (Math.random() * 6), mesh.position.y, mesh.position.z + (Math.random() * 4))
-                            this.box.rotationQuaternion = Quaternion.FromEulerAngles(1 + (Math.random() * 6),0,0 )
-                        }else{
-                            this.box.position = new Vector3(mesh.position.x + 1, mesh.position.y + 4, mesh.position.z + 1)
-                        }
+                        // if(i < 4){
+                            this.box.position = new Vector3(mesh.position.x + (Math.random() * 3), mesh.position.y, mesh.position.z + (Math.random() * 4))
+                            // this.box.rotationQuaternion = Quaternion.FromEulerAngles(1 + (Math.random() * 6),0,0 )
+                        // }
+                        // else{
+                            // this.box.position = new Vector3(mesh.position.x + 1, mesh.position.y + 4, mesh.position.z + 1)
+                        // }
                     }
                 }
             }
@@ -58,8 +61,29 @@ class PhysicWorldController extends GameObject{
         this.newMeshes =  this.phyAssets.containerMeshes.meshes
         this.barrelPhysicsRoot = this.makePhysicsObject(this.newMeshes, this.scene, 0.5);
 
-        this.createBouncingSpheres()
-        //this.updateImpostor()
+        this.bounceSpheres = this.bouncingBalls[0];
+        this.bounceSpheresPos = this.bounceSpheres.getAbsolutePosition()
+        this.cloneBalls = setInterval(()=>{
+            // const isOdd = i % 2 == 0 ? true : false;
+            // console.log(isOdd)
+            // this.negativePos = isOdd ? .5 : -.5
+            this.cloneBounce = this.bounceSpheres.clone("newBounce");
+            this.cloneBounce.position = new Vector3(this.bouncingBalls[0].getAbsolutePosition().x , this.bouncingBalls[0].getAbsolutePosition().y ,  this.bouncingBalls[0].getAbsolutePosition().z + (Math.random() * 0.3));
+            this.bouncingBalls.push(this.cloneBounce)
+        },10)
+        // for(let l= 0; l < 5;l++){
+        //     for (let i=0; i< 25;i++){
+        //         const isOdd = i % 2 == 0 ? true : false;
+        //         console.log(isOdd)
+        //         this.negativePos = isOdd ? .5 : -.5
+        //         this.cloneBounce = this.bounceSpheres.clone("newBounce");
+        //         this.cloneBounce.position = new Vector3(this.bouncingBalls[i].getAbsolutePosition().x , this.bouncingBalls[i].getAbsolutePosition().y + this.negativePos,  this.bouncingBalls[i].getAbsolutePosition().z + (Math.random() * this.negativePos));
+        //         this.bouncingBalls.push(this.cloneBounce)
+        //     }
+        // }
+
+
+        this.updateImpostor()
         // this.leftDoor.position = new Vector3(-39.74,0,5.64)
     }
 
@@ -74,8 +98,8 @@ class PhysicWorldController extends GameObject{
 
     makePhysicsObject (newMeshes, scene, scaling){
         // Create physics root and position it to be the center of mass for the imported mesh
-        var physicsRoot = new Mesh("physicsRoot", scene);
-        physicsRoot.position.y = 1;
+        const physicsRoot = new Mesh("physicsRoot", scene);
+        // physicsRoot.position = new Vector3(-27.72,0.22,2.96)
 
         // For all children labeled box (representing colliders), make them invisible and add them as a child of the root object
         newMeshes.forEach((m, i)=>{
@@ -87,36 +111,40 @@ class PhysicWorldController extends GameObject{
 
         // Add all root nodes within the loaded gltf to the physics root
         newMeshes.forEach((m, i)=>{
-            if(m.parent == null){
+            if(m.parent == null && m.name !== "nation_sphere"){
                 physicsRoot.addChild(m);
             }
         })
 
         // Make every collider into a physics impostor
         physicsRoot.getChildMeshes().forEach((m)=>{
+            // m.scaling.x = Math.abs(m.scaling.x);
+            // m.scaling.y = Math.abs(m.scaling.y);
+            // m.scaling.z = Math.abs(m.scaling.z);
             if(m.name.indexOf("box") != -1){
-                m.scaling.x = Math.abs(m.scaling.x);
-                m.scaling.y = Math.abs(m.scaling.y);
-                m.scaling.z = Math.abs(m.scaling.z);
-                m.physicsImpostor = new PhysicsImpostor(m, PhysicsImpostor.BoxImpostor, { mass: 1, friction: 0.7 }, scene);
+                m.physicsImpostor = new PhysicsImpostor(m, PhysicsImpostor.BoxImpostor, { mass: 0.1, friction: 6 }, scene);
+            }
+            if(m.name.includes("sphere")){
+                m.setParent(null)
+                m.position = new Vector3(-35.49,1.58,-0.33)
+                this.bouncingBalls.push(m)
+                m.physicsImpostor = new PhysicsImpostor(m, PhysicsImpostor.SphereImpostor, { mass: 0.1, friction: 0.1, restitution:0.5 }, scene);
             }
         })
 
         // Scale the root object and turn it into a physics impsotor
-        physicsRoot.scaling.scaleInPlace(scaling);
-        physicsRoot.physicsImpostor = new PhysicsImpostor(physicsRoot, PhysicsImpostor.NoImpostor, { mass: 3 }, scene);
+        // physicsRoot.scaling.scaleInPlace(scaling);
+        physicsRoot.physicsImpostor = new PhysicsImpostor(physicsRoot, PhysicsImpostor.NoImpostor, { mass: 3,friction: 6 }, scene);
+        physicsRoot.position = new Vector3(-35.49,1,-0.28)
 
         return physicsRoot;
     }
 
     createBouncingSpheres(){
-        for(let i = 0; i <3;i++){
             this.bounceSphere = MeshBuilder.CreateSphere("bounce",{diameter:0.2}, this.scene);
             // this.bounceSphere.setParent(this.scene.getTransformNodeByName("bouncig_position"))
             this.bounceSphere.physicsImpostor = new PhysicsImpostor(this.bounceSphere, PhysicsImpostor.SphereImpostor,{ignoreParent: true, mass:1,restitution:0.7,friction:0.1})
-            this.bounceSphere.position = this.scene.getTransformNodeByName("bouncig_position").position;
-        }
-      // return this.bounceSphere
+       return this.bounceSphere
 
     }
 
@@ -164,32 +192,23 @@ class PhysicWorldController extends GameObject{
             this.Z2 = true
             this.Z0 = false
         }
-       this.setStaticImpostor()
+        this.setStaticImpostor();
     }
 
     setStaticImpostor(){
-        console.log("set")
         if(this.Z0){
-            console.log("you are in Z0")
-            console.log(this.Z0)
-            this.scene.skeletons.forEach((skel)=>{
-                skel.prepare()
-            })
             this.scene.meshes.forEach((mesh)=>{
                 mesh.alwaysSelectAsActiveMesh = true
-                this.scene.freezeActiveMeshes(null,
-                    ()=>{console.log("succes")},
-                    (err)=>{console.log(err)})
-                if(mesh.physicsImpostor){
-                    mesh.physicsImpostor.sleep()
-                }
+                this.scene.freezeActiveMeshes()
             })
+            this.Z0 = false;
+            return;
         }
       if(this.Z1){
             console.log("you are in Z1")
             this.scene.meshes.forEach((mesh)=>{
-                if(mesh.physicsImpostor && mesh.name.includes("Z1")){
-                    mesh.physicsImpostor.wakeUp()
+                if(mesh.name.includes("kokokoko")){
+                    console.log(mesh.name)
                     this.scene.unfreezeActiveMeshes()
                 }
             })
@@ -198,11 +217,15 @@ class PhysicWorldController extends GameObject{
 
     updateImpostor(){
         this.beforeLoop = ()=>{
+            if(this.bouncingBalls.length >= 15){
+                clearInterval(this.cloneBalls);
+            }
+            // this.getPlayerZone();
             // if( this.leftDoor.intersectsPoint(this.stopImpostor.position)){
             //     this.jointLeft.physicsJoint.setLimit(-Math.PI/2,Math.PI/4, .9, .01, 10);
             //     this.leftDoor.physicsImpostor.setMass(0);
             // }
-            this.getPlayerZone()
+            // this.getPlayerZone()
             // if()
         }
     }

@@ -47,6 +47,9 @@ class SceneOptimization extends GameObject{
 
     updateBeforeLoop(){
         this.beforeLoop=()=>{
+            // this.scene.skeletons.forEach((skel)=>{
+            //     // skel.prepare()
+            // })
            // console.log(window.performance.memory.usedJSHeapSize)
         }
     }
